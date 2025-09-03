@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import SignInWithGoogleBtn from "@/components/custom-ui/SignInWithGoogleBtn";
 import {
   Form,
@@ -12,7 +12,9 @@ import { Separator } from "@/components/ui/separator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import GradientButton from './ui/GradientButton';
+import GradientButton from "./ui/GradientButton";
+import { toast } from "sonner";
+import { useState } from "react";
 
 // Zod schema for form validation
 const signUpSchema = z
@@ -35,6 +37,7 @@ const signUpSchema = z
 type SignUpFormValues = z.infer<typeof signUpSchema>;
 
 const SignUpForm = () => {
+  const [successMessage, setSuccessMessage] = useState<undefined | string>();
   const form = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -47,10 +50,17 @@ const SignUpForm = () => {
   });
 
   const onSubmit = async (values: SignUpFormValues) => {
-    const { name, email, confirmPassword, password } = values
-    const firstname = name.split(" ")[0] || ""
-    const lastname = name.split(" ").slice(1).join(" ") || ""
-    const rawData = { email, confirmPassword, password, firstname, lastname, username: name }
+    const { name, email, confirmPassword, password } = values;
+    const firstname = name.split(" ")[0] || "";
+    const lastname = name.split(" ").slice(1).join(" ") || "";
+    const rawData = {
+      email,
+      confirmPassword,
+      password,
+      firstname,
+      lastname,
+      username: name,
+    };
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
@@ -74,10 +84,13 @@ const SignUpForm = () => {
         }
         throw new Error(data?.message || "Registration failed");
       }
-      alert(
+      toast("Account created!", {
+        description: "Please check your email to activate your account.",
+      });
+      setSuccessMessage(
         "Account created! Please check your email to activate your account."
       );
-      // router.push("/verify-email"); //
+      form.reset();
       //eslint-disable-next-line
     } catch (e: any) {
       alert(e.message ?? "Something went wrong");
@@ -107,6 +120,11 @@ const SignUpForm = () => {
             </FormItem>
           )}
         />
+        {successMessage && (
+          <div className="text-center w-full py-4 bg-green-400/10 rounded-t-lg">
+            <p className="text-green-600 font-medium">{successMessage}</p>
+          </div>
+        )}
         <FormField
           control={form.control}
           name="email"
@@ -198,4 +216,4 @@ const SignUpForm = () => {
   );
 };
 
-export default SignUpForm
+export default SignUpForm;
