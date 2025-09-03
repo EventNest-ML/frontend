@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import SignInWithGoogleBtn from "@/components/custom-ui/SignInWithGoogleBtn";
 import {
   Form,
@@ -9,14 +9,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
-import { zodResolver } from "@hookform/resolvers/zod";
-import Link from 'next/link';
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import GradientButton from "./ui/GradientButton";
 import { Input } from "./ui/input";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
-// Zod schema for form validation
 const signInSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
   password: z
@@ -27,20 +29,43 @@ const signInSchema = z.object({
 type SignInFormValues = z.infer<typeof signInSchema>;
 
 const SignInForm = () => {
-const form = useForm<SignInFormValues>({
-  resolver: zodResolver(signInSchema),
-  defaultValues: {
-    email: "",
-    password: "",
-  },
-});
+  const router = useRouter();
+  const [submitting, setSubmitting] = useState(false);
+  const form = useForm<SignInFormValues>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: { email: "", password: "" },
+  });
 
-const onSubmit = (values: SignInFormValues) => {
-  // TODO: Implement sign-in logic
-  console.log(values);
-};
+  const onSubmit = async (values: SignInFormValues) => {
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      const data = await res.json();
 
-  
+      if (!res.ok || !data?.ok) {
+        // surface backend validation errors if any
+        const message = data?.message || "Invalid credentials";
+        form.setError("email", { message: "" }); // clear
+        form.setError("password", { message });
+        return;
+      }
+
+      // Logged in: tokens are in httpOnly cookies; user is returned
+      toast.success("Logged in successfully!");
+      router.push("/dashboard");
+    } catch (e) {
+      form.setError("password", {
+        message: "Something went wrong. Please try again.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <Form {...form}>
       <form
@@ -89,7 +114,15 @@ const onSubmit = (values: SignInFormValues) => {
         >
           Forgot Password?
         </Link>
-        <GradientButton type="submit" className="w-full py-[15px]">Login</GradientButton>
+
+        <GradientButton
+          type="submit"
+          className="w-full py-[15px]"
+          disabled={submitting}
+        >
+          {submitting ? "Logging in..." : "Login"}
+        </GradientButton>
+
         <div className="flex items-center justify-center gap-3">
           <Separator className="flex-1" />
           <p className="font-semibold">Or</p>
@@ -99,6 +132,6 @@ const onSubmit = (values: SignInFormValues) => {
       </form>
     </Form>
   );
-}
+};
 
-export default SignInForm
+export default SignInForm;
