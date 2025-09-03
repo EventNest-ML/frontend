@@ -31,6 +31,7 @@ export async function apiFetch<T>(
     cache: "no-store",
     next: { revalidate: 0 },
   });
+  console.log(res)
 
   // Try to parse JSON; if not JSON, fall back to text
   const isJson = res.headers.get("content-type")?.includes("application/json");

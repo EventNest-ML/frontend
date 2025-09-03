@@ -11,10 +11,11 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { set, z } from "zod";
 import GradientButton from "./ui/GradientButton";
 import { toast } from "sonner";
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 // Zod schema for form validation
 const signUpSchema = z
@@ -78,6 +79,8 @@ const SignUpForm = () => {
               if (field in form.getValues()) {
                 //eslint-disable-next-line
                 form.setError(field as any, { message: msg });
+                setSuccessMessage(undefined);
+                toast.error(msg);
               }
             }
           );
@@ -93,7 +96,7 @@ const SignUpForm = () => {
       form.reset();
       //eslint-disable-next-line
     } catch (e: any) {
-      alert(e.message ?? "Something went wrong");
+      toast.error(e.message ?? "Something went wrong");
     }
   };
 
@@ -103,6 +106,11 @@ const SignUpForm = () => {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-5"
       >
+        {successMessage && (
+          <div className="text-center w-full py-4 bg-green-400/10 rounded-t-lg">
+            <p className="text-green-600 text-[14px]">{successMessage}</p>
+          </div>
+        )}
         <FormField
           control={form.control}
           name="name"
@@ -120,11 +128,7 @@ const SignUpForm = () => {
             </FormItem>
           )}
         />
-        {successMessage && (
-          <div className="text-center w-full py-4 bg-green-400/10 rounded-t-lg">
-            <p className="text-green-600 font-medium">{successMessage}</p>
-          </div>
-        )}
+
         <FormField
           control={form.control}
           name="email"
@@ -203,7 +207,7 @@ const SignUpForm = () => {
           type="submit"
           className="w-full py-[15px]"
         >
-          Create Account
+          {form.formState.isSubmitting ? <Loader2 className="size-[16px] animate-spin"/> : "Create Account"}
         </GradientButton>
         <div className="flex items-center justify-center gap-3">
           <Separator className="flex-1" />
