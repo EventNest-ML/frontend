@@ -7,7 +7,7 @@ import {
   setAuthCookies,
 } from "@/lib/auth-cookies";
 
-// 🔹 Simple in-memory cache
+// Simple in-memory cache
 let cachedSession: { data: any; expiry: number } | null = null;
 
 /**
@@ -36,8 +36,8 @@ export async function GET() {
 
         const responseData = { authenticated: true, user };
 
-        // update cache (1 min)
-        cachedSession = { data: responseData, expiry: now + 60_000 };
+        // update cache (55 min)
+        cachedSession = { data: responseData, expiry: now + 60_000 * 55 };
 
         return NextResponse.json(responseData);
       } catch (_) {

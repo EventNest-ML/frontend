@@ -11,6 +11,7 @@ export async function POST(req: Request) {
       body: JSON.stringify({ uid, token }),
     });
 
+    console.log(res)
     // Try parsing JSON, fallback to text
     const isJson = res.headers
       .get("content-type")

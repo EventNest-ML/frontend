@@ -1,7 +1,25 @@
+// /src/app/api/logout/route.ts
 import { NextResponse } from "next/server";
-import { clearAuthCookies } from "@/lib/auth-cookies";
+import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from "@/lib/env";
 
 export async function POST() {
-  clearAuthCookies();
-  return NextResponse.json({ ok: true });
+  const res = NextResponse.json({ ok: true });
+
+  res.cookies.set(ACCESS_TOKEN_COOKIE, "", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
+
+  res.cookies.set(REFRESH_TOKEN_COOKIE, "", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
+
+  return res;
 }

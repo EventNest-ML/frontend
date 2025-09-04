@@ -9,12 +9,13 @@ import {
   Settings
 } from "lucide-react";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React, { useState } from "react";
 import {motion} from "framer-motion"
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
 
   const links = [
     {
@@ -75,7 +76,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
     },
     {
       label: "Logout",
-      href: "/logout",
+      action: "logout",
       icon: <LogOut className="text-neutral-700/50 h-5 w-5 flex-shrink-0" />,
     },
   ];
@@ -146,24 +147,50 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
             <div className="mt-16 flex flex-col gap-5 w-full">
               {links.map((link, idx) => (
                 <div
-                  className="relative w-full z-10 px-2 pl-3"
                   key={idx}
+                  className="relative w-full z-10 px-2 pl-3"
                 >
-                  <SidebarLink
-                    key={idx}
-                    link={link}
-                    className={cn(
-                      "transition-colors duration-200",
-                      pathname === link.href &&
-                        "bg-transparent rounded-md  z-50"
-                    )}
-                  />
-                  <div
-                    className={cn(
-                      "absolute w-full h-full top-1/2 left-1/2 -translate-1/2 -z-10 rounded-l-full bg-gradient-to-r from-[#8A3BEF] to-[#B457FA] hidden",
-                      pathname === link.href && "flex"
-                    )}
-                  />
+                  {link.action === "logout" ? (
+                    <button
+                      onClick={async () => {
+                        await fetch("/api/auth/logout", { method: "POST" });
+                        router.replace("/signin"); // force redirect
+                      }}
+                      className="flex items-center gap-2 w-full text-left transition-colors duration-200 cursor-pointer"
+                    >
+                      {link.icon}
+                      <motion.span
+                        animate={{
+                          display: open ? "inline-block" : "none",
+                          opacity: open ? 1 : 0,
+                        }}
+                        className={cn(
+                          "group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0 ml-2"
+                        )}
+                      >
+                        Logout
+                      </motion.span>
+                    </button>
+                  ) : (
+                    link.href && (
+                      <>
+                        <SidebarLink
+                          link={link}
+                          className={cn(
+                            "transition-colors duration-200",
+                            pathname === link.href &&
+                              "bg-transparent rounded-md z-50"
+                          )}
+                        />
+                        <div
+                          className={cn(
+                            "absolute w-full h-full top-1/2 left-1/2 -translate-1/2 -z-10 rounded-l-full bg-gradient-to-r from-[#8A3BEF] to-[#B457FA] hidden",
+                            pathname === link.href && "flex"
+                          )}
+                        />
+                      </>
+                    )
+                  )}
                 </div>
               ))}
             </div>

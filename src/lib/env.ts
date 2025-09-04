@@ -9,10 +9,12 @@ export const REFRESH_TOKEN_COOKIE =
 
 // Max-Age (seconds). to match backend’s TTLs.
 export const ACCESS_TOKEN_MAX_AGE = Number(
-  process.env.ACCESS_TOKEN_MAX_AGE ?? 15 * 60
-); // 15 mins
+  process.env.ACCESS_TOKEN_MAX_AGE ?? 60 * 60
+); // 1 hour
+
 export const REFRESH_TOKEN_MAX_AGE = Number(
-  process.env.REFRESH_TOKEN_MAX_AGE ?? 30 * 24 * 60 * 60
-); // 30 days
+  process.env.REFRESH_TOKEN_MAX_AGE ?? 7 * 24 * 60 * 60
+); // 7 days
+
 
 export const IS_PROD = process.env.NODE_ENV === "production";
