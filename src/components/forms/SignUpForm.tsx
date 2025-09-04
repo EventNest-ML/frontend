@@ -10,12 +10,13 @@ import {
 } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { set, z } from "zod";
-import GradientButton from "./ui/GradientButton";
-import { toast } from "sonner";
-import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+import PasswordInput from "../custom-ui/PasswordInput";
+import GradientButton from "../ui/GradientButton";
 
 // Zod schema for form validation
 const signUpSchema = z
@@ -152,10 +153,8 @@ const SignUpForm = () => {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <input
-                  type="password"
+                <PasswordInput
                   placeholder="Password"
-                  className="bg-[#B457FA4D]/30 border border-[#B457FA4D] p-[10px] rounded-[10px] w-full"
                   {...field}
                 />
               </FormControl>
@@ -169,10 +168,8 @@ const SignUpForm = () => {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <input
-                  type="password"
+                <PasswordInput
                   placeholder="Confirm Password"
-                  className="bg-[#B457FA4D]/30 border border-[#B457FA4D] p-[10px] rounded-[10px] w-full"
                   {...field}
                 />
               </FormControl>
@@ -207,7 +204,11 @@ const SignUpForm = () => {
           type="submit"
           className="w-full py-[15px]"
         >
-          {form.formState.isSubmitting ? <Loader2 className="size-[16px] animate-spin"/> : "Create Account"}
+          {form.formState.isSubmitting ? (
+            <Loader2 className="size-[16px] animate-spin" />
+          ) : (
+            "Create Account"
+          )}
         </GradientButton>
         <div className="flex items-center justify-center gap-3">
           <Separator className="flex-1" />

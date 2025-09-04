@@ -1,5 +1,5 @@
 import {LogoIcon} from "@/components/custom-ui/Logo";
-import SignUpForm from "@/components/SignUpForm";
+import SignUpForm from "@/components/forms/SignUpForm";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import React from "react";

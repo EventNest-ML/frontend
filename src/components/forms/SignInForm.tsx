@@ -9,15 +9,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import GradientButton from "./ui/GradientButton";
-import { Input } from "./ui/input";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
+import PasswordInput from "../custom-ui/PasswordInput";
+import GradientButton from "../ui/GradientButton";
+import { Input } from "../ui/input";
+import { Loader2 } from "lucide-react";
 
 const signInSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -97,10 +99,8 @@ const SignInForm = () => {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input
-                  type="password"
+                <PasswordInput
                   placeholder="Password"
-                  className="bg-[#B457FA4D]/30 border border-[#B457FA4D] p-[10px] rounded-[10px] w-full"
                   {...field}
                 />
               </FormControl>
@@ -118,9 +118,12 @@ const SignInForm = () => {
         <GradientButton
           type="submit"
           className="w-full py-[15px]"
-          disabled={submitting}
         >
-          {submitting ? "Logging in..." : "Login"}
+          {form.formState.isSubmitting ? (
+            <Loader2 className="size-[16px] animate-spin" />
+          ) : (
+            "Login"
+          )}
         </GradientButton>
 
         <div className="flex items-center justify-center gap-3">
