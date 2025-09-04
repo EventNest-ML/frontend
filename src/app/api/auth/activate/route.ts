@@ -11,8 +11,14 @@ export async function POST(req: Request) {
       body: JSON.stringify({ uid, token }),
     });
 
-    console.log(res)
-    // Try parsing JSON, fallback to text
+    if (res.status === 204) {
+      // No content, return a success with your own body
+      return NextResponse.json(
+        { ok: true, message: "Account activated successfully" },
+        { status: 200 }
+      );
+    }
+
     const isJson = res.headers
       .get("content-type")
       ?.includes("application/json");
