@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import ClassicLoader from "@/components/loader";
 import confetti from "canvas-confetti";
 import { apiFetch, ApiError } from "@/lib/http";
+import Loader from "./custom-ui/Loader";
 
 export default function ActivatePageClient({
   uid,
@@ -116,28 +117,41 @@ export default function ActivatePageClient({
   };
 
   return (
-    <div className="w-full h-screen bg-gradient-to-tr from-[#8A3BEF] to-[#B457FA] flex flex-col justify-center items-center text-center px-4">
-      <h1 className="text-white font-bold text-4xl mb-6">
-        Welcome to EventNest 🎉
-      </h1>
-
+    <div className="w-full flex flex-col justify-center items-center text-center px-2 sm:px-0">
       {status.startsWith("✅") ? (
-        <div className="text-white text-lg">
-          {status} <br />
-          <span className="text-sm opacity-80">
-            Redirecting in {countdown}s...
-          </span>
-        </div>
+        <>
+          <div className="w-full text-center py-4 bg-green-400/10 rounded-t-lg px-2">
+            <p className="text-green-600 text-[15px] sm:text-[14px] text-balance">
+              {status}
+            </p>
+            <br />
+            <span className="text-sm opacity-80">
+              Redirecting in {countdown}s...
+            </span>
+          </div>
+          <div className="flex flex-col items-center gap-4 relative w-full min-h-[180px] sm:min-h-[220px]">
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+              <Loader
+                animation="none"
+                size={120}
+              />
+            </div>
+          </div>
+        </>
       ) : status.startsWith("❌") ? (
-        <div className="flex flex-col items-center gap-4">
-          <div className="text-red-200 text-lg max-w-md">{status}</div>
-
+        <div className="flex flex-col items-center gap-4 w-full">
+          <div className="text-center w-full py-4 bg-red-400/10 rounded-t-lg px-2">
+            <p className="text-red-600 text-[15px] sm:text-[14px] text-balance">
+              {status}
+            </p>
+            <br />
+          </div>
           {/* Show Resend button if token is stale */}
           {status.includes("expired") && (
             <button
               onClick={handleResend}
               disabled={loading}
-              className="bg-white text-[#8A3BEF] font-semibold px-4 py-2 rounded-lg shadow hover:opacity-90 transition"
+              className="bg-white text-[#8A3BEF] font-semibold px-4 py-2 rounded-lg shadow hover:opacity-90 transition w-full sm:w-auto"
             >
               {loading ? "Resending..." : "Resend Activation Email"}
             </button>
@@ -147,18 +161,27 @@ export default function ActivatePageClient({
             <div
               className={`text-sm ${
                 resendStatus.startsWith("✅")
-                  ? "text-green-200"
-                  : "text-red-200"
+                  ? "text-green-600"
+                  : "text-red-600"
               }`}
             >
               {resendStatus}
             </div>
           )}
+          <div className="flex flex-col items-center gap-4 relative w-full min-h-[180px] sm:min-h-[220px]">
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+              <Loader
+                animation="none"
+                size={120}
+              />
+            </div>
+          </div>
         </div>
       ) : (
-        <div className="flex items-center gap-3 text-white text-lg">
-          <ClassicLoader />
-          {status}
+        <div className="flex flex-col items-center gap-4 relative w-full min-h-[200px] sm:min-h-[300px]">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <Loader />
+          </div>
         </div>
       )}
     </div>

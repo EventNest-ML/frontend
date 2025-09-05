@@ -20,7 +20,7 @@ let cachedSession: { data: SessionData; expiry: number } | null = null;
 
 // Cache timings
 const ACCESS_TTL_MS = 55 * 60 * 1000; // 55 minutes (access token is 60m)
-const ERROR_TTL_MS = 60 * 1000; // 1 minute for errors/fallbacks
+const ERROR_TTL_MS = 0 * 60 * 1000; // 1 minute for errors/fallbacks
 
 /**
  * getSession()
@@ -72,6 +72,8 @@ export async function getSession(): Promise<SessionData> {
       `${API_BASE}/api/auth/jwt/refresh/`,
       { method: "POST", body: { refresh } }
     );
+
+    console.log(tokens)
 
     // 4) Persist rotated tokens as cookies for this response
     if (tokens.refresh) {

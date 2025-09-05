@@ -1,5 +1,5 @@
 'use client'
-import { Lock } from "lucide-react";
+import { Lock, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import React from "react";
@@ -31,16 +31,16 @@ const AuthSideImages = ({ url = "/signin" }: { url?: string }) => (
     />
     <h1 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[50px] font-bold text-white w-full px-4 text-center text-balance">
       {url === "/signin" ? (
-        <>
-          Welcome Back!
-        </>
+        <>Welcome Back!</>
       ) : url === "/signup" ? (
-        <>
-          Together Starts Now
-        </>
-      ) : (
-        <div className="size-[100px] rounded-lg border border-white p-4 mx-auto">
+        <>Together Starts Now</>
+      ) : url === "/forgot-password" ? (
+        <div className="size-[100px] rounded-lg border border-white/20 p-4 mx-auto backdrop-blur-[100px]">
           <Lock className="size-full" />
+        </div>
+      ) : (
+        <div className="size-[140px] rounded-lg border border-white/20 p-4 mx-auto backdrop-blur-xs">
+          <ShieldCheck className="size-full" />
         </div>
       )}
     </h1>
@@ -72,7 +72,7 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
     <main className="relative grid h-screen w-full grid-cols-1 lg:grid-cols-2">
       {/* Centered authentication card */}
       <section className="absolute inset-0 flex items-center justify-center">
-        <div className="w-full max-w-[960px] rounded-[20px] shadow-xl z-10 grid grid-cols-1 lg:grid-cols-2 border-2 border-black/10 overflow-hidden">
+        <div className="w-full max-w-[960px] rounded-[20px] md:shadow-xl z-10 grid grid-cols-1 lg:grid-cols-2 md:border-2 border-black/10 overflow-hidden">
           <AuthSideImages url={pathName} />
           <div className="p-10 overflow-scroll hide-scrollbar h-fit lg:max-h-[90vh] ">
             {children}

@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import GradientButton from "@/components/ui/GradientButton";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import Link from "next/link";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -67,7 +68,9 @@ export default function ForgotPasswordForm() {
       >
         {successMessage && (
           <div className="text-center w-full py-4 bg-green-400/10 rounded-t-lg">
-            <p className="text-green-600 text-[14px] text-balance">{successMessage}</p>
+            <p className="text-green-600 text-[14px] text-balance">
+              {successMessage}
+            </p>
           </div>
         )}
         {errorMessage && (
@@ -104,6 +107,15 @@ export default function ForgotPasswordForm() {
             "Send Reset Link"
           )}
         </GradientButton>
+        <p className="text-center mt-4">
+          Remember your password?{" "}
+          <Link
+            href={"/signin"}
+            className="font-semibold hover:underline "
+          >
+            Login
+          </Link>
+        </p>
       </form>
     </Form>
   );

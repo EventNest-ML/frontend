@@ -15,6 +15,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import PasswordInput from "./PasswordInput";
+import Link from "next/link";
 
 const resetSchema = z
   .object({
@@ -139,6 +140,16 @@ export default function PasswordResetForm({
             "Reset Password"
           )}
         </GradientButton>
+
+        <p className="text-center mt-4">
+          Back to Login?{" "}
+          <Link
+            href={"/signin"}
+            className="font-semibold hover:underline "
+          >
+            Login
+          </Link>
+        </p>
       </form>
     </Form>
   );

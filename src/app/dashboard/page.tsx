@@ -13,17 +13,13 @@ import { notFound } from "next/navigation";
 const DashboardHome = async () => {
   const session = await getSession();
 
-  if (!session?.user) {
-    return notFound()
-  }
-
   return (
     <div className="flex flex-col gap-8">
       {/* Top Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="col-span-2 bg-gradient-to-r from-[#8A3BEF] to-[#B457FA] text-white shadow-lg">
           <CardHeader>
-            <CardTitle>Good morning, {session.user.firstname} </CardTitle>
+            <CardTitle>Good morning, {session?.user?.firstname} </CardTitle>
             <CardDescription className="text-white/80">
               Ready to make your next event stress-free
             </CardDescription>
