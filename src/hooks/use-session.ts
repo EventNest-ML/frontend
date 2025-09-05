@@ -6,6 +6,7 @@ type Session = {
   user?: {
     id: string;
     email: string;
+    //eslint-disable-next-line
     [key: string]: any;
   };
 };
@@ -25,6 +26,7 @@ export function useSession() {
           setSession(data);
           setLoading(false);
         }
+        //eslint-disable-next-line
       } catch (_) {
         if (mounted) {
           setSession({ authenticated: false });

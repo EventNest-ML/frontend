@@ -17,6 +17,7 @@ export async function POST(req: Request) {
     setAuthCookies(tokens.access, tokens.refresh);
 
     // 3) Fetch user profile
+    // eslint-disable-next-line
     const user = await apiFetch<any>(`${API_BASE}/api/auth/users/me/`, {
       method: "GET",
       headers: { Authorization: `Bearer ${tokens.access}` },

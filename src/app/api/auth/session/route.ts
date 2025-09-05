@@ -1,88 +1,81 @@
 import { NextResponse } from "next/server";
-import { API_BASE } from "@/lib/env";
+import { cookies } from "next/headers";
+import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE, API_BASE } from "@/lib/env";
 import { apiFetch, ApiError } from "@/lib/http";
-import {
-  getTokensFromCookies,
-  setAccessCookie,
-  setAuthCookies,
-} from "@/lib/auth-cookies";
+import { setAuthCookies, setAccessCookie } from "@/lib/auth-cookies";
 
-// Simple in-memory cache
-let cachedSession: { data: any; expiry: number } | null = null;
+// In-memory session cache
+// let cachedSession: { data: any; expiry: number } | null = null;
 
-/**
- * Returns { authenticated, user? }
- * Tries to use access; if invalid, uses refresh to rotate and retry.
- * Now includes a 1-minute in-memory cache.
- */
 export async function GET() {
   const now = Date.now();
 
-  // 1) If cache is still valid, returns it directly
-  if (cachedSession && cachedSession.expiry > now) {
-    return NextResponse.json(cachedSession.data);
-  }
+  // ✅ Use cookies() inside route handlers, not req.cookies
+  const jar = await cookies();
+  const refresh = jar.get(REFRESH_TOKEN_COOKIE)?.value || null;
+  const access = jar.get(ACCESS_TOKEN_COOKIE)?.value || null;
+
+  console.log("SESSION route cookies =>", { access, refresh });
 
   try {
-    let { access, refresh } = await getTokensFromCookies();
+    // 1) Use cached session if valid
+    // if (cachedSession && cachedSession.expiry > now) {
+    //   return NextResponse.json(cachedSession.data);
+    // }
 
-    // 2) Try users/me with access
+    // 2) Try access token
     if (access) {
       try {
+        // eslint-disable-next-line
         const user = await apiFetch<any>(`${API_BASE}/api/auth/users/me/`, {
           method: "GET",
           headers: { Authorization: `Bearer ${access}` },
         });
 
         const responseData = { authenticated: true, user };
-
-        // update cache (55 min)
-        cachedSession = { data: responseData, expiry: now + 60_000 * 55 };
-
+        // cachedSession = { data: responseData, expiry: now + 60_000 * 55 }; // ~55 mins
         return NextResponse.json(responseData);
-      } catch (_) {
-        // fallthrough to refresh
+      } catch {
+        // invalid/expired access token → fallthrough to refresh
       }
     }
 
-    // 3) Try refresh
+    // 3) If no refresh token, return unauthenticated
     if (!refresh) {
-      const responseData = { authenticated: false };
-      cachedSession = { data: responseData, expiry: now + 60_000 };
-      return NextResponse.json(responseData, { status: 401 });
+      return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
+    // 4) Refresh the access token
     const tokens = await apiFetch<{ access: string; refresh: string }>(
       `${API_BASE}/api/auth/jwt/refresh/`,
       { method: "POST", body: { refresh } }
     );
 
-    if (tokens.refresh) setAuthCookies(tokens.access, tokens.refresh);
-    else setAccessCookie(tokens.access);
+    if (tokens.refresh) {
+      await setAuthCookies(tokens.access, tokens.refresh);
+    } else {
+      await setAccessCookie(tokens.access);
+    }
 
-    // Retry with new access
+    // 5) Retry with new access
+    //eslint-disable-next-line
     const user = await apiFetch<any>(`${API_BASE}/api/auth/users/me/`, {
       method: "GET",
       headers: { Authorization: `Bearer ${tokens.access}` },
     });
 
     const responseData = { authenticated: true, user };
-
-    cachedSession = { data: responseData, expiry: now + 60_000 };
+    // cachedSession = { data: responseData, expiry: now + 60_000 * 55 };
 
     return NextResponse.json(responseData);
   } catch (err) {
-    const responseData = { authenticated: false };
-
     if (err instanceof ApiError) {
-      cachedSession = {
-        data: { ...responseData, message: err.message, details: err.details },
-        expiry: now + 60_000,
-      };
-      return NextResponse.json(cachedSession.data, { status: 401 });
+      return NextResponse.json(
+        { authenticated: false, message: err.message, details: err.details },
+        { status: 401 }
+      );
     }
 
-    cachedSession = { data: responseData, expiry: now + 60_000 };
-    return NextResponse.json(responseData, { status: 401 });
+    return NextResponse.json({ authenticated: false }, { status: 401 });
   }
 }

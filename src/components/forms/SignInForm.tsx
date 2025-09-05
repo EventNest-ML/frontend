@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -19,7 +20,6 @@ import { z } from "zod";
 import PasswordInput from "../custom-ui/PasswordInput";
 import GradientButton from "../ui/GradientButton";
 import { Input } from "../ui/input";
-import { Loader2 } from "lucide-react";
 
 const signInSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -32,14 +32,12 @@ type SignInFormValues = z.infer<typeof signInSchema>;
 
 const SignInForm = () => {
   const router = useRouter();
-  const [submitting, setSubmitting] = useState(false);
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: "", password: "" },
   });
 
   const onSubmit = async (values: SignInFormValues) => {
-    setSubmitting(true);
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
@@ -63,8 +61,7 @@ const SignInForm = () => {
       form.setError("password", {
         message: "Something went wrong. Please try again.",
       });
-    } finally {
-      setSubmitting(false);
+      console.log(e)
     }
   };
 

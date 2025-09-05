@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff } from "lucide-react";
 
+//eslint-disable-next-line
 interface PasswordInputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {}
 

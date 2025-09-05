@@ -1,5 +1,5 @@
-import { NextResponse, NextRequest } from "next/server";
 import { REFRESH_TOKEN_COOKIE } from "@/lib/env";
+import { NextRequest, NextResponse } from "next/server";
 
 const PROTECTED_PREFIXES = ["/dashboard", "/account"];
 const AUTH_PAGES = ["/signin", "/signup"];

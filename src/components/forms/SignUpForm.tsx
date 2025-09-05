@@ -109,7 +109,7 @@ const SignUpForm = () => {
       >
         {successMessage && (
           <div className="text-center w-full py-4 bg-green-400/10 rounded-t-lg">
-            <p className="text-green-600 text-[14px]">{successMessage}</p>
+            <p className="text-green-600 text-[14px] text-balance">{successMessage}</p>
           </div>
         )}
         <FormField
