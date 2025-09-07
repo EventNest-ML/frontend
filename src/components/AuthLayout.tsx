@@ -14,7 +14,7 @@ const AuthSideImages = ({ url = "/signin" }: { url?: string }) => (
       priority
     />
     <Image
-      src="/group-ellipse-four-five.png"
+      src="/group-ellipse-four-five.svg"
       alt="Decorative ellipse"
       width={150}
       height={250}
@@ -22,7 +22,7 @@ const AuthSideImages = ({ url = "/signin" }: { url?: string }) => (
       priority
     />
     <Image
-      src="/design-ellipse-group-with-circle.png"
+      src="/design-ellipse-group-with-circle.svg"
       alt="Decorative circle group"
       width={300}
       height={400}
@@ -50,14 +50,14 @@ const AuthSideImages = ({ url = "/signin" }: { url?: string }) => (
 const AuthDecorations = () => (
   <div className="relative bg-white overflow-hidden">
     <Image
-      src="/ellipse-one.png"
+      src="/ellipse-one.svg"
       alt="Ellipse decoration one"
       width={250}
       height={300}
       className="absolute -right-2 top-0"
     />
     <Image
-      src="/ellipse-two.png"
+      src="/ellipse-two.svg"
       alt="Ellipse decoration two"
       width={300}
       height={300}
