@@ -1,4 +1,6 @@
-import { Calendar } from "@/components/ui/calendar";
+import { CalendarComp } from "@/components/custom-ui/Calender";
+import ProgressCircle from "@/components/custom-ui/ProgressCircle";
+import { ToastBridge } from "@/components/custom-ui/ToastBridge";
 import {
   Card,
   CardContent,
@@ -6,149 +8,177 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { getSession } from "@/lib/auth-server";
-import { notFound } from "next/navigation";
+import { getCurrentDate, getGreeting } from "@/lib/utils";
+import Image from "next/image";
+import { redirect, RedirectType } from "next/navigation";
 
 const DashboardHome = async () => {
   const session = await getSession();
 
+if (!session.authenticated && session.message) {
   return (
-    <div className="flex flex-col gap-8">
-      {/* Top Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="col-span-2 bg-gradient-to-r from-[#8A3BEF] to-[#B457FA] text-white shadow-lg">
-          <CardHeader>
-            <CardTitle>Good morning, {session?.user?.firstname} </CardTitle>
-            <CardDescription className="text-white/80">
-              Ready to make your next event stress-free
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {/* Decorative circle/graphic can go here if needed */}
-          </CardContent>
-        </Card>
-        <Card className="flex flex-col justify-between shadow-lg">
-          <CardHeader>
-            <CardTitle>Create Event</CardTitle>
-            <CardDescription>Create new event</CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-end">
-            <button className="bg-gradient-to-r from-[#8A3BEF] to-[#B457FA] rounded-full p-3 shadow-md">
-              <svg
-                width="24"
-                height="24"
-                fill="none"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line
-                  x1="12"
-                  y1="5"
-                  x2="12"
-                  y2="19"
-                />
-                <line
-                  x1="5"
-                  y1="12"
-                  x2="19"
-                  y2="12"
-                />
-              </svg>
-            </button>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Events Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="col-span-2 shadow-lg">
-          <CardHeader>
-            <CardTitle>All Events</CardTitle>
-            <CardDescription>For all active events</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-4">
-              <div className="bg-gradient-to-r from-[#8A3BEF] to-[#B457FA] text-white rounded-xl flex items-center justify-center h-24 text-2xl font-bold">
-                Total Events
-                <span className="ml-4 text-3xl">0</span>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <Card className="text-center py-4">
-                  <CardTitle className="text-base font-semibold">
-                    Owned Events
-                  </CardTitle>
-                  <CardContent className="text-2xl font-bold">0</CardContent>
-                </Card>
-                <Card className="text-center py-4">
-                  <CardTitle className="text-base font-semibold">
-                    Collaborated Events
-                  </CardTitle>
-                  <CardContent className="text-2xl font-bold">0</CardContent>
-                </Card>
-                <Card className="text-center py-4">
-                  <CardTitle className="text-base font-semibold">
-                    Past Events
-                  </CardTitle>
-                  <CardContent className="text-2xl font-bold">0</CardContent>
-                </Card>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle>September</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Calendar className="rounded-xl border" />
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Bottom Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle>Tasks Completed</CardTitle>
-            <CardDescription>For all active events</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center">
-            <Progress
-              value={0}
-              className="w-32 h-32 rounded-full"
-            />
-            <span className="mt-2 text-2xl font-bold">0%</span>
-          </CardContent>
-        </Card>
-        <Card className="shadow-lg flex flex-col justify-between">
-          <CardHeader>
-            <CardTitle>To-do List</CardTitle>
-            <CardDescription>No task yet</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center flex-1">
-            <svg
-              width="64"
-              height="64"
-              fill="none"
-              stroke="#B457FA"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="mb-2"
-            >
-              <path d="M2 32L32 2l30 30M32 2v60" />
-            </svg>
-            <span className="text-center text-sm">
-              Create your first event to get started
-            </span>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+    <>
+      <ToastBridge
+        message={session.message}
+        variant="error"
+      />
+      {redirect("/signin", RedirectType.replace)}
+    </>
   );
+}
+    return (
+      <div className="flex flex-col gap-8">
+        {/* Top Row */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+          <Card className="col-span-3 flex flex-row p-0 overflow-hidden">
+            <CardHeader className="flex flex-col justify-center h-full px-10 w-full">
+              <CardTitle className="font-bold text-[20px] ">
+                {getGreeting()}, {session?.user?.firstname}{" "}
+              </CardTitle>
+              <CardDescription className="text-[12px] text-black/80">
+                Ready to make your next event stress-free
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="bg-gradient-to-r from-[#8A3BEF] to-[#B457FA] w-[229px] flex items-center justify-center p-4">
+              <div className="w-[167px] h-[130px] relative">
+                <Image
+                  src={"/welcome-ellipse-design.svg"}
+                  alt="welcome banner"
+                  fill
+                />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="col-span-2 flex flex-row p-0 px-10">
+            <CardHeader className="flex flex-col justify-center h-full w-full p-0">
+              <CardTitle className="font-bold text-[20px] whitespace-nowrap">
+                Create Event
+              </CardTitle>
+              <CardDescription className="text-[12px] text-black/80 whitespace-nowrap">
+                Create new event
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex items-center justify-center p-0">
+              <button className="bg-[#B558FA] hover:bg-[#ac58fa] size-[80px] rounded-[10px] shadow-md flex items-center justify-center hover:scale-105 transition-transform p-[10px] cursor-pointer">
+                <div className="border-2 border-white size-[38px] rounded-md flex items-center justify-center">
+                  <svg
+                    width="24"
+                    height="24"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line
+                      x1="12"
+                      y1="5"
+                      x2="12"
+                      y2="19"
+                    />
+                    <line
+                      x1="5"
+                      y1="12"
+                      x2="19"
+                      y2="12"
+                    />
+                  </svg>
+                </div>
+              </button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Events Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="col-span-2">
+            <CardHeader>
+              <CardTitle className="font-bold">All Events</CardTitle>
+              <CardDescription>For all active events</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-4">
+                <div className="bg-gradient-to-r from-[#8A3BEF] to-[#B457FA] text-white rounded-xl flex flex-col items-center justify-center h-[150px] text-2xl font-bold p-[20px]">
+                  <p className="font-bold text-[14px] text-center">
+                    Total Events
+                  </p>
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-5xl">0</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <Card className="text-center py-5 h-[150px]">
+                    <CardTitle className="font-semibold">
+                      Owned Events
+                    </CardTitle>
+                    <CardContent className="text-2xl font-bold w-full h-full flex justify-center items-center">
+                      0
+                    </CardContent>
+                  </Card>
+                  <Card className="text-center py-5 h-[150px]">
+                    <CardTitle className="font-semibold">
+                      Collaborated Events
+                    </CardTitle>
+                    <CardContent className="text-2xl font-bold w-full h-full flex justify-center items-center">
+                      0
+                    </CardContent>
+                  </Card>
+                  <Card className="text-center py-5 h-[150px]">
+                    <CardTitle className="font-semibold">Past Events</CardTitle>
+                    <CardContent className="text-2xl font-bold w-full h-full flex justify-center items-center">
+                      0
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="w-fit mx-auto p-2 bg-[#B558FA] font-bold text-white rounded-sm shadow-none">
+                {getCurrentDate()}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="my-auto w-full">
+              <CalendarComp />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Bottom Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Tasks Completed</CardTitle>
+              <CardDescription>For all active events</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center">
+              <ProgressCircle
+                value={30}
+                size={120}
+              />
+            </CardContent>
+          </Card>
+          <Card className="flex flex-col justify-between">
+            <CardHeader>
+              <CardTitle>To-do List</CardTitle>
+              <CardDescription>
+                <p>No task yet</p>
+                <span>Create your first event to get started</span>
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="size-[90px] relative mx-auto pb-16px">
+              <Image
+                src={"/flight-icon.svg"}
+                alt="todo icon"
+                fill
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
 };
 
 export default DashboardHome;

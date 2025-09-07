@@ -1,6 +1,13 @@
+import { Plus_Jakarta_Sans } from "next/font/google";
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { RouteGuard } from "@/components/custom-ui/RouteGaurd";
+
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
 
 export const metadata: Metadata = {
   title: "EventNest – Plan and Organize Events Effortlessly",
@@ -15,9 +22,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`antialiased`}>
-        <main>{children}</main>
-        <Toaster position="top-center"/>
+      <body className={`antialiased ${plusJakarta.className}`}>
+        <main>
+          <RouteGuard type="auth">{children}</RouteGuard>
+        </main>
+        <Toaster position="top-center" />
       </body>
     </html>
   );

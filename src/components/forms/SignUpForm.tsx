@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import PasswordInput from "../custom-ui/PasswordInput";
 import GradientButton from "../ui/GradientButton";
+import { Input } from "../ui/input";
 
 // Zod schema for form validation
 const signUpSchema = z
@@ -118,7 +119,7 @@ const SignUpForm = () => {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <input
+                <Input
                   type="text"
                   placeholder="Name"
                   className="bg-[#B457FA4D]/30 border border-[#B457FA4D] p-[10px] rounded-[10px] w-full"
@@ -136,7 +137,7 @@ const SignUpForm = () => {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <input
+                <Input
                   type="email"
                   placeholder="Email"
                   className="bg-[#B457FA4D]/30 border border-[#B457FA4D] p-[10px] rounded-[10px] w-full"

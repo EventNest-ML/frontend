@@ -8,7 +8,6 @@ import { setAuthCookies, setAccessCookie } from "@/lib/auth-cookies";
 // let cachedSession: { data: any; expiry: number } | null = null;
 
 export async function GET() {
-  const now = Date.now();
 
   // ✅ Use cookies() inside route handlers, not req.cookies
   const jar = await cookies();

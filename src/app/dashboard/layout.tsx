@@ -7,7 +7,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex min-h-screen">
       <AppSidebar>
-        <main className="flex-1 px-8 max-w-[1100px] mx-auto bg-white py-10 h-screen overflow-auto hide-scrollbar space-y-20">
+        <main className="flex-1 px-8 max-w-[1100px] mx-auto bg-white py-10 h-screen overflow-auto hide-scrollbar space-y-16">
           <div className="w-full flex justify-between items-center">
             <LogoIcon
               width={36}

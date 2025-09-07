@@ -41,9 +41,6 @@ export async function setAccessCookie(access: string) {
 }
 
 export async function clearAuthCookies() {
-  const jar = await cookies();
-  jar.delete(ACCESS_TOKEN_COOKIE);
-  jar.delete(REFRESH_TOKEN_COOKIE);
 
   clearSessionCache();
 }

@@ -1,10 +1,9 @@
 "use client";
 
+import { ApiError, apiFetch } from "@/lib/http";
+import confetti from "canvas-confetti";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import ClassicLoader from "@/components/loader";
-import confetti from "canvas-confetti";
-import { apiFetch, ApiError } from "@/lib/http";
 import Loader from "./custom-ui/Loader";
 
 export default function ActivatePageClient({
