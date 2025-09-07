@@ -20,7 +20,7 @@ export async function RouteGuard({
 }: RouteGuardProps) {
   const session = await getSession();
 
-  // 🔹 Auth Guard
+  //  Auth Guard
   if (type === "auth" && !session.authenticated) {
     return (
       <>
@@ -33,7 +33,7 @@ export async function RouteGuard({
     );
   }
 
-  // 🔹 Guest Guard
+  //  Guest Guard
   if (type === "guest" && session.authenticated) {
     return redirect(redirectTo ?? "/dashboard", RedirectType.replace);
   }

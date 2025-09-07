@@ -23,9 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`antialiased ${plusJakarta.className}`}>
-        <main>
-          <RouteGuard type="auth">{children}</RouteGuard>
-        </main>
+        <main>{children}</main>
         <Toaster position="top-center" />
       </body>
     </html>
