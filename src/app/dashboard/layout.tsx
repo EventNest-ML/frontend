@@ -9,7 +9,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     <RouteGuard type="auth">
       <div className="flex min-h-screen">
         <AppSidebar>
-          <main className="flex-1 px-20 mx-auto bg-white py-10 h-screen overflow-auto hide-scrollbar space-y-16">
+          <main className="flex-1 px-20 max-w-[1200px] mx-auto bg-white py-10 h-screen overflow-auto hide-scrollbar space-y-16">
             <div className="w-full flex justify-between items-center">
               <LogoIcon
                 width={36}
