@@ -1,21 +1,12 @@
 "use server";
 
-import {
-  setAccessCookie,
-  setAuthCookies
-} from "@/lib/auth-cookies";
+import { setAccessCookie, setAuthCookies } from "@/lib/auth-cookies";
 import { ACCESS_TOKEN_COOKIE, API_BASE, REFRESH_TOKEN_COOKIE } from "@/lib/env";
 import { ApiError, apiFetch } from "@/lib/http";
+import { SessionData } from "@/type";
 import type { User } from "@/types/user";
 import { cookies, headers } from "next/headers";
 
-type SessionData = {
-  authenticated: boolean;
-  user?: User;
-  message?: string;
-  //eslint-disable-next-line
-  details?: any;
-};
 
 // Module-level in-memory cache (per server instance)
 let cachedSession: { data: SessionData; expiry: number } | null = null;
@@ -100,10 +91,9 @@ export async function getSession(): Promise<SessionData> {
       ) {
         await clearSessionCache();
         const origin =
-          (await headers()).get("origin") ?? process.env.NEXT_PUBLIC_APP_URL!;
+          process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
         await fetch(`${origin}/api/auth/logout`, {
           method: "POST",
-          cache: "no-store",
         });
         return {
           authenticated: false,

@@ -5,7 +5,7 @@ import { clearSessionCache } from "@/lib/auth-server";
 
 export async function POST() {
   const res = NextResponse.json({ ok: true });
-  
+
   res.cookies.set(ACCESS_TOKEN_COOKIE, "", {
     httpOnly: true,
     secure: true,
@@ -21,7 +21,8 @@ export async function POST() {
     path: "/",
     maxAge: 0,
   });
-  clearSessionCache();
   
+  await clearSessionCache();
+
   return res;
 }

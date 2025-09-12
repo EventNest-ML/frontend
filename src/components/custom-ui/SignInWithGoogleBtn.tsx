@@ -1,10 +1,21 @@
+"use client";
 import React from "react";
 import { Button } from "../ui/button";
 
-const SignInWithGoogleBtn = ({ isLoading = false }: { isLoading?: boolean }) => {
+const SignInWithGoogleBtn = ({
+  isLoading = false,
+}: {
+  isLoading?: boolean;
+}) => {
+  const handleGoogleSignIn = () => {
+    window.location.href =
+      "https://eventnest-api.onrender.com/accounts/google/login/";
+  };
+
   return (
     <Button
-      // onClick={handleGoogleSignIn}
+      type="button"
+      onClick={handleGoogleSignIn}
       className="w-full gap-2 bg-transparent border border-black"
       disabled={isLoading}
       variant="outline"
@@ -35,7 +46,6 @@ const SignInWithGoogleBtn = ({ isLoading = false }: { isLoading?: boolean }) => 
               fill="#ea4335"
             />
           </svg>
-
           <span>Sign in with Google</span>
         </>
       )}

@@ -1,4 +1,3 @@
-// components/RouteGuard.tsx
 import { ReactNode } from "react";
 import { getSession } from "@/lib/auth-server";
 import { redirect, RedirectType } from "next/navigation";

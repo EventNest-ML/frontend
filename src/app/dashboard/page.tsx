@@ -1,6 +1,5 @@
 import { CalendarComp } from "@/components/custom-ui/Calender";
 import ProgressCircle from "@/components/custom-ui/ProgressCircle";
-import { ToastBridge } from "@/components/custom-ui/ToastBridge";
 import {
   Card,
   CardContent,
@@ -11,24 +10,18 @@ import {
 import { getSession } from "@/lib/auth-server";
 import { getCurrentDate, getGreeting } from "@/lib/utils";
 import Image from "next/image";
-import { redirect, RedirectType } from "next/navigation";
 
 const DashboardHome = async () => {
   const session = await getSession();
-
-if (!session.authenticated && session.message) {
-  return (
-    <>
-      <ToastBridge
-        message={session.message}
-        variant="error"
-      />
-      {redirect("/signin", RedirectType.replace)}
-    </>
-  );
-}
     return (
       <div className="flex flex-col gap-8">
+        {!session.authenticated && session.message && (
+          <div className="text-center w-full py-4 bg-red-400/10 rounded-t-lg">
+            <p className="text-red-600 text-[14px] text-balance">
+              {session.message}
+            </p>
+          </div>
+        )}
         {/* Top Row */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
           <Card className="col-span-3 flex flex-row p-0 overflow-hidden">

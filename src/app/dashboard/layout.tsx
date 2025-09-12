@@ -2,11 +2,9 @@ import React from "react";
 import { AppSidebar } from "@/components/custom-ui/AppSidebar";
 import { LogoIcon } from "@/components/custom-ui/Logo";
 import { Bell } from "lucide-react";
-import { RouteGuard } from "@/components/custom-ui/RouteGaurd";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <RouteGuard type="auth">
       <div className="flex min-h-screen">
         <AppSidebar>
           <main className="flex-1 px-20 max-w-[1200px] mx-auto bg-white py-10 h-screen overflow-auto hide-scrollbar space-y-16">
@@ -28,7 +26,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           </main>
         </AppSidebar>
       </div>
-    </RouteGuard>
   );
 };
 

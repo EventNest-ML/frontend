@@ -1,51 +1,56 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE, API_BASE } from "@/lib/env";
+import { NextResponse, NextRequest } from "next/server";
+import { API_BASE, ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from "@/lib/env";
 import { apiFetch, ApiError } from "@/lib/http";
-import { setAuthCookies, setAccessCookie } from "@/lib/auth-cookies";
+import {
+  setAccessCookie,
+  setAuthCookies,
+  clearAuthCookies,
+} from "@/lib/auth-cookies";
+import type { User } from "@/types/user";
+import { clearSessionCache } from "@/lib/auth-server";
 
-// In-memory session cache
-// let cachedSession: { data: any; expiry: number } | null = null;
+// Cache in memory per server instance
+let cachedSession: { data: any; expiry: number } | null = null;
+const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const SHORT_ERROR_TTL = 5 * 1000;
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const now = Date.now();
 
-  // ✅ Use cookies() inside route handlers, not req.cookies
-  const jar = await cookies();
-  const refresh = jar.get(REFRESH_TOKEN_COOKIE)?.value || null;
-  const access = jar.get(ACCESS_TOKEN_COOKIE)?.value || null;
+  // 1) Use cache if valid
+  if (cachedSession && cachedSession.expiry > now) {
+    return NextResponse.json(cachedSession.data);
+  }
 
-  console.log("SESSION route cookies =>", { access, refresh });
+  const access = req.cookies.get(ACCESS_TOKEN_COOKIE)?.value ?? null;
+  const refresh = req.cookies.get(REFRESH_TOKEN_COOKIE)?.value ?? null;
 
   try {
-    // 1) Use cached session if valid
-    // if (cachedSession && cachedSession.expiry > now) {
-    //   return NextResponse.json(cachedSession.data);
-    // }
-
     // 2) Try access token
     if (access) {
       try {
-        // eslint-disable-next-line
-        const user = await apiFetch<any>(`${API_BASE}/api/auth/users/me/`, {
+        const user = await apiFetch<User>(`${API_BASE}/api/auth/users/me/`, {
           method: "GET",
           headers: { Authorization: `Bearer ${access}` },
         });
 
         const responseData = { authenticated: true, user };
-        // cachedSession = { data: responseData, expiry: now + 60_000 * 55 }; // ~55 mins
+        cachedSession = { data: responseData, expiry: now + REFRESH_TTL_MS };
         return NextResponse.json(responseData);
       } catch {
-        // invalid/expired access token → fallthrough to refresh
+        // invalid access → fallthrough to refresh
       }
     }
 
-    // 3) If no refresh token, return unauthenticated
+    // 3) No refresh token = logged out
     if (!refresh) {
-      return NextResponse.json({ authenticated: false }, { status: 401 });
+      const responseData = { authenticated: false };
+      cachedSession = { data: responseData, expiry: now + SHORT_ERROR_TTL };
+      return NextResponse.json(responseData, { status: 401 });
     }
 
-    // 4) Refresh the access token
-    const tokens = await apiFetch<{ access: string; refresh: string }>(
+    // 4) Try refresh flow
+    const tokens = await apiFetch<{ access: string; refresh?: string }>(
       `${API_BASE}/api/auth/jwt/refresh/`,
       { method: "POST", body: { refresh } }
     );
@@ -56,19 +61,35 @@ export async function GET() {
       await setAccessCookie(tokens.access);
     }
 
-    // 5) Retry with new access
-    //eslint-disable-next-line
-    const user = await apiFetch<any>(`${API_BASE}/api/auth/users/me/`, {
+    const user = await apiFetch<User>(`${API_BASE}/api/auth/users/me/`, {
       method: "GET",
       headers: { Authorization: `Bearer ${tokens.access}` },
     });
 
     const responseData = { authenticated: true, user };
-    // cachedSession = { data: responseData, expiry: now + 60_000 * 55 };
-
+    cachedSession = { data: responseData, expiry: now + REFRESH_TTL_MS };
     return NextResponse.json(responseData);
   } catch (err) {
     if (err instanceof ApiError) {
+      // If refresh token is invalid/expired
+      if (
+        err.details &&
+        typeof err.details === "object" &&
+        "code" in err.details &&
+        (err.details as { code?: string }).code === "token_not_valid"
+      ) {
+        await clearAuthCookies();
+        await clearSessionCache();
+        cachedSession = null;
+        return NextResponse.json(
+          {
+            authenticated: false,
+            message: "Session expired, please log in again.",
+          },
+          { status: 401 }
+        );
+      }
+
       return NextResponse.json(
         { authenticated: false, message: err.message, details: err.details },
         { status: 401 }

@@ -1,18 +1,9 @@
 "use client";
+import { SessionData } from "@/type";
 import { useEffect, useState } from "react";
 
-type Session = {
-  authenticated: boolean;
-  user?: {
-    id: string;
-    email: string;
-    //eslint-disable-next-line
-    [key: string]: any;
-  };
-};
-
 export function useSession() {
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<SessionData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
