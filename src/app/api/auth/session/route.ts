@@ -10,7 +10,7 @@ import type { User } from "@/types/user";
 import { clearSessionCache } from "@/lib/auth-server";
 
 // Cache in memory per server instance
-//eslint-disble-next-line
+//eslint-disable-next-line
 let cachedSession: { data: any; expiry: number } | null = null;
 const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const SHORT_ERROR_TTL = 5 * 1000;
