@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Loader from "@/components/custom-ui/Loader";
 import Loading from "@/app/loading";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
 export default function AuthCallbackPage() {
   const router = useRouter();

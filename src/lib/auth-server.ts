@@ -5,7 +5,7 @@ import { ACCESS_TOKEN_COOKIE, API_BASE, REFRESH_TOKEN_COOKIE } from "@/lib/env";
 import { ApiError, apiFetch } from "@/lib/http";
 import { SessionData } from "@/type";
 import type { User } from "@/types/user";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 
 
 // Module-level in-memory cache (per server instance)
