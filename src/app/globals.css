@@ -119,6 +119,12 @@
   }
 }
 
+@layer components {
+  .input-field {
+    @apply !bg-[#B457FA4D]/30 !border !border-[#B457FA4D] !p-[10px] !rounded-[10px] !w-full;
+  }
+}
+
 .hide-scrollbar {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */

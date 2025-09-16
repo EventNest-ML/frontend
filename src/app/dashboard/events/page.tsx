@@ -12,30 +12,16 @@ import { getSession } from "@/lib/auth-server";
 import { getCurrentDate, getGreeting } from "@/lib/utils";
 import Image from "next/image";
 
-const DashboardHome = async () => {
-  const session = await getSession();
+const EventDashboard = async () => {
   return (
     <div className="flex flex-col gap-8">
       {/* Top Row */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        <Card className="col-span-3 flex flex-row p-0 overflow-hidden">
-          <CardHeader className="flex flex-col justify-center h-full px-10 w-full">
-            <CardTitle className="font-bold text-[20px] ">
-              {getGreeting()}, {session?.user?.firstname}{" "}
-            </CardTitle>
-            <CardDescription className="text-[12px] text-black/80">
-              Ready to make your next event stress-free
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="bg-gradient-to-r from-[#8A3BEF] to-[#B457FA] w-[229px] flex items-center justify-center p-4">
-            <div className="w-[167px] h-[130px] relative">
-              <Image
-                src={"/welcome-ellipse-design.svg"}
-                alt="welcome banner"
-                fill
-              />
-            </div>
-          </CardContent>
+        <Card className="col-span-3 overflow-hidden bg-gradient-to-r from-[#8A3BEF] to-[#B457FA] text-white rounded-xl flex flex-col items-center justify-center h-[150px] text-2xl font-bold p-[20px]">
+          <p className="font-bold text-[14px] text-center">Total Events</p>
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-5xl">0</span>
+          </div>
         </Card>
         <Card className="col-span-2 flex flex-row p-0 px-10">
           <CardHeader className="flex flex-col justify-center h-full w-full p-0">
@@ -87,23 +73,15 @@ const DashboardHome = async () => {
             <CardDescription>For all active events</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col gap-4">
-              <div className="bg-gradient-to-r from-[#8A3BEF] to-[#B457FA] text-white rounded-xl flex flex-col items-center justify-center h-[150px] text-2xl font-bold p-[20px]">
-                <p className="font-bold text-[14px] text-center">
-                  Total Events
-                </p>
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-5xl">0</span>
-                </div>
-              </div>
+            <div className="flex flex-col">
               <div className="grid grid-cols-3 gap-4">
-                <Card className="text-center py-5 h-[150px]">
+                <Card className="text-center py-5 h-[250px]">
                   <CardTitle className="font-semibold">Owned Events</CardTitle>
                   <CardContent className="text-2xl font-bold w-full h-full flex justify-center items-center">
                     0
                   </CardContent>
                 </Card>
-                <Card className="text-center py-5 h-[150px]">
+                <Card className="text-center py-5 h-[250px]">
                   <CardTitle className="font-semibold">
                     Collaborated Events
                   </CardTitle>
@@ -111,7 +89,7 @@ const DashboardHome = async () => {
                     0
                   </CardContent>
                 </Card>
-                <Card className="text-center py-5 h-[150px]">
+                <Card className="text-center py-5 h-[250px]">
                   <CardTitle className="font-semibold">Past Events</CardTitle>
                   <CardContent className="text-2xl font-bold w-full h-full flex justify-center items-center">
                     0
@@ -121,46 +99,25 @@ const DashboardHome = async () => {
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="w-fit mx-auto p-2 bg-[#B558FA] font-bold text-white rounded-sm shadow-none">
-              {getCurrentDate()}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="my-auto w-full">
-            <CalendarComp />
-          </CardContent>
-        </Card>
+        <CalendarComp className="border-[#B457FA4D] bg-[#B457FA0D] shadow-sm" />
       </div>
 
       {/* Bottom Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Tasks Completed</CardTitle>
-            <CardDescription>For all active events</CardDescription>
+            <CardTitle>Created Event</CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col items-center">
-            <ProgressCircle
-              value={30}
-              size={120}
-            />
+          <CardContent className="flex flex-col items-center w-full h-full min-h-[80px] justify-center">
+            All created events will be displayed here
           </CardContent>
         </Card>
         <Card className="flex flex-col justify-between">
           <CardHeader>
             <CardTitle>To-do List</CardTitle>
-            <CardDescription>
-              <p>No task yet</p>
-              <span>Create your first event to get started</span>
-            </CardDescription>
           </CardHeader>
-          <CardContent className="size-[90px] relative mx-auto pb-16px">
-            <Image
-              src={"/flight-icon.svg"}
-              alt="todo icon"
-              fill
-            />
+          <CardContent className="flex flex-col items-center w-full h-full min-h-[80px] justify-center">
+            All Collaborated Events will be displayed here
           </CardContent>
         </Card>
       </div>
@@ -168,4 +125,4 @@ const DashboardHome = async () => {
   );
 };
 
-export default DashboardHome;
+export default EventDashboard;
