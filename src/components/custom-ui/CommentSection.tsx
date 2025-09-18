@@ -37,7 +37,7 @@ export function CommentSectionSheet({
   return (
     <Sheet>
       <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent className="pt-7 flex flex-col gap-0">
+      <SheetContent className="pl-3 pt-7 flex flex-col gap-0 md:max-w-[500px]">
         {/* Header */}
         <SheetHeader>
           <SheetTitle className="text-xl font-bold">{task.title}</SheetTitle>
