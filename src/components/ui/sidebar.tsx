@@ -90,7 +90,7 @@ export const DesktopSidebar = ({
   return (
     <motion.div
       className={cn(
-        "h-full py-10 hidden md:flex md:flex-col bg-white shadow-lg border-r dark:bg-neutral-800 w-[300px] flex-shrink-0 relative flex-start",
+        "h-full py-10 !hidden md:!flex md:flex-col bg-white shadow-lg border-r dark:bg-neutral-800 w-[300px] flex-shrink-0 relative flex-start",
         className
       )}
       animate={{
@@ -116,7 +116,7 @@ export const MobileSidebar = ({
     <>
       <div
         className={cn(
-          "h-10 px-4 py-4 flex flex-row md:hidden items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full"
+          "h-10 px-4 py-4 flex flex-row md:hidden items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full z-50"
         )}
         {...props}
       >
@@ -157,17 +157,22 @@ export const MobileSidebar = ({
 };
 
 export const SidebarLink = ({
+  checker,
   link,
   className,
   ...props
 }: {
   link: Links;
   className?: string;
-  props?: LinkProps;
+    props?: LinkProps;
+  checker?: "strict"
 }) => {
   const { open, animate } = useSidebar();
   const pathname = usePathname();
-  const isActive = pathname === link.href;
+    const isActive =
+      checker === "strict"
+        ? pathname === link.href
+        : pathname.includes(link.href!);
 
   return (
     <Link

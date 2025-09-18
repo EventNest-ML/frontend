@@ -41,9 +41,25 @@ export async function setAccessCookie(access: string) {
 }
 
 export async function clearAuthCookies() {
+  const jar = await cookies();
+  jar.set(ACCESS_TOKEN_COOKIE, "", {
+    httpOnly: true,
+    secure: IS_PROD,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
+  jar.set(REFRESH_TOKEN_COOKIE, "", {
+    httpOnly: true,
+    secure: IS_PROD,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
 
   clearSessionCache();
 }
+
 
 export async function getTokensFromCookies(store = cookies()) {
   const access = (await store).get(ACCESS_TOKEN_COOKIE)?.value || null;
