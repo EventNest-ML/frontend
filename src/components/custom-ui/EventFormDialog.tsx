@@ -25,29 +25,18 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Camera, Plus } from "lucide-react";
+import { CalendarIcon, Camera, Plus } from "lucide-react";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Card } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
+import { eventFormSchema } from "@/lib/schema";
 
 /* ----------------- Validation Schema ----------------- */
-const formSchema = z.object({
-  eventName: z.string().min(2, "Event name is required"),
-  budget: z.string().optional(),
-  venue: z.string().optional(),
-  eventType: z.string().nonempty("Select an event type"),
-  description: z.string().optional(),
-  startDate: z.string().nonempty("Start date required"),
-  endDate: z.string().nonempty("End date required"),
-  collaborators: z.array(z.string().email()).optional(),
-  image: z.any().optional(),
-});
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.infer<typeof eventFormSchema>;
 
-/* ----------------- Component ----------------- */
 export default function CreateEventDialog({
   children,
 }: {
@@ -57,7 +46,7 @@ export default function CreateEventDialog({
   const [preview, setPreview] = React.useState<string | null>(null);
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(eventFormSchema),
     defaultValues: {
       eventName: "",
       budget: "",
@@ -245,12 +234,14 @@ export default function CreateEventDialog({
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
+                          <div className="relative">
                             <Input
                               type="date"
+                              className="pr-10 [appearance:none] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full input-field rounded-full"
                               {...field}
-                              className="input-field rounded-full flex"
-                            aria-label="Start date"
                             />
+                            <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -266,10 +257,10 @@ export default function CreateEventDialog({
                           <div className="relative">
                             <Input
                               type="date"
+                              className="pr-10 [appearance:none] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full input-field rounded-full"
                               {...field}
-                              className="input-field rounded-full"
-                              aria-label="End date"
                             />
+                            <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                           </div>
                         </FormControl>
                         <FormMessage />

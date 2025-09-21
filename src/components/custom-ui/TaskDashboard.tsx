@@ -13,6 +13,7 @@ import { Button } from "../ui/button";
 import { Task } from "@/lib/data";
 import TaskDialog from "./TaskFormDialog";
 import { CommentSectionSheet } from "./CommentSection";
+import { Badge } from "../ui/badge";
 
 type TaskDashboardProps = {
   tasks: Task[];
@@ -25,22 +26,22 @@ export default function TaskDashboard({ tasks }: TaskDashboardProps) {
     completed: tasks.filter((t) => t.status === "completed"),
   };
 
-  const allTasks = tasks; // raw list
+  const allTasks = tasks;
   const myTasks = [
     ...grouped.pending,
     ...grouped["in-progress"],
     ...grouped.completed,
-  ]; // sorted by priority
+  ];
 
   const getPriorityColor = (status: string) => {
     if (status === "pending") return "bg-red-500";
-    if (status === "in-progress") return "bg-blue-500";
+    if (status === "in-progress") return "bg-[#9647FF]";
     if (status === "completed") return "bg-green-500";
     return "bg-gray-300";
   };
 
   const renderTaskList = (list: Task[], emptyMsg: string) => (
-    <ScrollArea className="h-fit max-h-dvh overflow-y-auto md:px-5">
+    <ScrollArea className="h-dvh md:px-5">
       {list.length > 0 ? (
         <div className="space-y-2">
           {list.map((task) => (
@@ -50,7 +51,7 @@ export default function TaskDashboard({ tasks }: TaskDashboardProps) {
             >
               <CardHeader className="flex-1 flex flex-row gap-3 items-center">
                 <div
-                  className={`border border-black size-[24px] rounded-full ${getPriorityColor(
+                  className={`size-[24px] rounded-full ${getPriorityColor(
                     task.status
                   )}`}
                 />
@@ -95,7 +96,7 @@ export default function TaskDashboard({ tasks }: TaskDashboardProps) {
 
               {/* Action Buttons */}
               <div className="flex items-center gap-2">
-                {task.status !== "completed" && (
+                {task.status !== "completed" ? (
                   <CardContent className="flex items-center gap-3">
                     <TaskDialog
                       title="Edit Task"
@@ -130,6 +131,10 @@ export default function TaskDashboard({ tasks }: TaskDashboardProps) {
                     >
                       Mark as complete
                     </Button>
+                  </CardContent>
+                ) : (
+                    <CardContent className="flex items-center gap-3">
+                      <Badge className="border-[#B558FA] text-[#B558FA] p-4 py-2 bg-transparent rounded-md">Completed</Badge>
                   </CardContent>
                 )}
               </div>

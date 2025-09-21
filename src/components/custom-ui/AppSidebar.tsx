@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { PollDialog } from "./PollDialog";
 
 export type SidebarLinkItem = {
   label: string;
@@ -87,15 +88,19 @@ export function AppSidebar({ children, links, checker }: AppSidebarProps) {
             )}
 
             {/* Links */}
-            <div className="mt-16 flex flex-col gap-5 w-full">
+            <div className="mt-16 flex flex-col gap-5 w-full h-full">
               {links.map((link, idx) => {
-                const isActive = checker === "strict"
-                  ? pathname === link.href
-                  : pathname.includes(link.href!);
+                const isActive =
+                  checker === "strict"
+                    ? pathname === link.href
+                    : pathname.includes(link.href!);
                 return (
                   <div
                     key={idx}
-                    className="relative w-full z-10 px-2 pl-3"
+                    className={cn(
+                      "relative w-full z-10 px-2 pl-3",
+                      link.action === "logout" && "mt-auto"
+                    )}
                   >
                     {link.action === "logout" ? (
                       <button
@@ -118,21 +123,45 @@ export function AppSidebar({ children, links, checker }: AppSidebarProps) {
                           {link.label}
                         </motion.span>
                       </button>
+                    ) : link.label === "Poll" ? (
+                      <PollDialog>
+                        <div
+                          className={cn(
+                            "flex items-center justify-start gap-2 group/sidebar py-2 transition-colors duration-200 cursor-pointer"
+                          )}
+                        >
+                          {link.icon}
+                          <motion.span
+                            animate={{
+                              display: open ? "inline-block" : "none",
+                              opacity: open ? 1 : 0,
+                            }}
+                            className={cn(
+                              "text-sm group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0",
+                              isActive
+                                ? "text-white font-medium"
+                                : "text-neutral-700 dark:text-neutral-200"
+                            )}
+                          >
+                            {link.label}
+                          </motion.span>
+                        </div>
+                      </PollDialog>
                     ) : (
                       link.href && (
                         <>
                           <SidebarLink
-                              link={{
-                                ...(link as SidebarLinkItem),
-                                href: link.href,
-                              }} // force href presence
-                              className={cn(
-                                "transition-colors duration-200",
-                                isActive
-                                  ? "text-white font-bold bg-transparent rounded-md z-50"
-                                  : "text-neutral-700/50"
-                              )}
-                              checker={checker}
+                            link={{
+                              ...(link as SidebarLinkItem),
+                              href: link.href,
+                            }} // force href presence
+                            className={cn(
+                              "transition-colors duration-200",
+                              isActive
+                                ? "text-white font-bold bg-transparent rounded-md z-50"
+                                : "text-neutral-700/50"
+                            )}
+                            checker={checker}
                           />
                           <div
                             className={cn(

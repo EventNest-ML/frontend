@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui
 
 export default function CollaboratorsCard({ event }: { event: Event }) {
   return (
-    <Card>
+    <Card className="flex-1">
       <CardHeader>
         <CardTitle className="font-semibold">Team Collaborators</CardTitle>
         <CardDescription className="text-sm">

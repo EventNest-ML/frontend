@@ -1,15 +1,10 @@
 "use client";
 
-import * as React from "react";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  DialogTrigger
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -19,16 +14,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { budgetFormSchema } from "@/lib/schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as React from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import {
   Card,
   CardContent,
@@ -36,31 +27,28 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { taskFormSchema } from "@/lib/schema";
 
-type FormValues = z.infer<typeof taskFormSchema>;
+type FormValues = z.infer<typeof budgetFormSchema>;
 
-export default function TaskDialog({
+export default function BudgetDialog({
   children,
-  title,
   defaultValues,
-   onSubmit,
+  onSubmit,
 }: {
   children: React.ReactNode;
-  title: string;
   defaultValues?: Partial<FormValues>;
   onSubmit?: (task: FormValues) => void;
 }) {
   const [open, setOpen] = React.useState(false);
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(taskFormSchema),
+    resolver: zodResolver(budgetFormSchema),
     defaultValues: {
-      taskName: defaultValues?.taskName || "",
-      assignee: defaultValues?.assignee || "",
-      dueDate: defaultValues?.dueDate || "",
-      status: defaultValues?.status || "pending",
-      description: defaultValues?.description || "",
+      expenseName: defaultValues?.expenseName || "",
+      assignTo: defaultValues?.assignTo || "",
+      estimatedCost: defaultValues?.estimatedCost || "",
+      actualCost: defaultValues?.actualCost || "",
+      comment: defaultValues?.comment || "",
     },
   });
 
@@ -77,15 +65,15 @@ export default function TaskDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
 
       <DialogContent className="w-full !max-w-2xl rounded-2xl p-8">
-        <DialogHeader>
+        {/* <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
+        </DialogHeader> */}
 
         <Card className="mt-4">
           <CardHeader>
-            <CardTitle>Task Details</CardTitle>
+            <CardTitle>Create New Expenses</CardTitle>
             <CardDescription>
-              Fill in the details below to create a new task for your event
+              Fill in the details below to create a new budget for your event
               planning.
             </CardDescription>
           </CardHeader>
@@ -100,12 +88,12 @@ export default function TaskDialog({
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="taskName"
+                    name="expenseName"
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
                           <Input
-                            placeholder="Task Title"
+                            placeholder="Expense Name"
                             className="rounded-xl bg-gray-400/10 py-6"
                             {...field}
                           />
@@ -116,7 +104,7 @@ export default function TaskDialog({
                   />
                   <FormField
                     control={form.control}
-                    name="assignee"
+                    name="assignTo"
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
@@ -136,18 +124,15 @@ export default function TaskDialog({
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="dueDate"
+                    name="estimatedCost"
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <div className="relative">
-                            <Input
-                              type="date"
-                              className="rounded-xl pr-10 [appearance:none] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full bg-gray-400/10 py-6"
-                              {...field}
-                            />
-                            <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                          </div>
+                          <Input
+                            placeholder="Estimated Cost"
+                            className="rounded-xl bg-gray-400/10 py-6"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -155,27 +140,15 @@ export default function TaskDialog({
                   />
                   <FormField
                     control={form.control}
-                    name="status"
+                    name="actualCost"
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <SelectTrigger className="rounded-xl bg-gray-400/10 py-6 w-full">
-                              <SelectValue placeholder="Initial Status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pending">ToDo</SelectItem>
-                              <SelectItem value="in-progress">
-                                In Progress
-                              </SelectItem>
-                              <SelectItem value="completed">
-                                Completed
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <Input
+                            placeholder="Actual Cost"
+                            className="rounded-xl bg-gray-400/10 py-6"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -186,12 +159,12 @@ export default function TaskDialog({
                 {/* Description */}
                 <FormField
                   control={form.control}
-                  name="description"
+                  name="comment"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
                         <Textarea
-                          placeholder="Description"
+                          placeholder="Comment(optional)"
                           className="rounded-xl bg-gray-400/10 p-4 h-36"
                           {...field}
                         />
@@ -215,7 +188,7 @@ export default function TaskDialog({
                     type="submit"
                     className="p-6 bg-[#B558FA] hover:bg-[#B558FA]/70 flex-1"
                   >
-                    Update Task
+                    Add Expenses
                   </Button>
                 </div>
               </form>

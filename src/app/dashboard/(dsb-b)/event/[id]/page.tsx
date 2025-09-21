@@ -24,8 +24,8 @@ export default async function EventDetailsPage({
     <div className="space-y-6">
       <EventHeader event={event} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 place-items-stretch">
+        <div className="lg:col-span-2 space-y-6 flex flex-col">
           <BudgetCard event={event} />
           <TasksCard event={event} />
           <CollaboratorsCard event={event} />
