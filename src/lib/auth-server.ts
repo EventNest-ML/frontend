@@ -21,94 +21,37 @@ const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000;
  *   2) refresh flow if access is invalid/expired
  * - Caches session for REFRESH_TTL_MS (since refresh token is the source of truth).
  */
+
+
 export async function getSession(): Promise<SessionData> {
   const now = Date.now();
 
-  // Return cached if still valid
   if (cachedSession && cachedSession.expiry > now) {
     return cachedSession.data;
   }
 
-  const jar = await cookies();
-  const access = jar.get(ACCESS_TOKEN_COOKIE)?.value ?? null;
-  const refresh = jar.get(REFRESH_TOKEN_COOKIE)?.value ?? null;
+  const tokenResponse = await getAccessToken();
+
+  if ("error" in tokenResponse) {
+    const responseData: SessionData = {
+      authenticated: false,
+      message: tokenResponse.error,
+    };
+    cachedSession = { data: responseData, expiry: now + 5 * 1000 };
+    return responseData;
+  }
 
   try {
-    // 1) Try with access token if available
-    if (access) {
-      try {
-        const user = await apiFetch<User>(`${API_BASE}/api/auth/users/me/`, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${access}` },
-        });
-
-        const responseData: SessionData = { authenticated: true, user };
-        cachedSession = { data: responseData, expiry: now + REFRESH_TTL_MS };
-        return responseData;
-      } catch {
-        // access invalid → fallthrough to refresh
-      }
-    }
-
-    // 2) No refresh token = unauthenticated
-    if (!refresh) {
-      const responseData: SessionData = { authenticated: false };
-      cachedSession = { data: responseData, expiry: now + 5 * 1000 }; // short error cache
-      return responseData;
-    }
-
-    // 3) Refresh flow
-    const tokens = await apiFetch<{ access: string; refresh?: string }>(
-      `${API_BASE}/api/auth/jwt/refresh/`,
-      { method: "POST", body: { refresh } }
-    );
-    console.log(tokens);
-
-    // Save new cookies
-    if (tokens.refresh) {
-      await setAuthCookies(tokens.access, tokens.refresh);
-    } else {
-      await setAccessCookie(tokens.access);
-    }
-
-    // 4) Retry with new access
     const user = await apiFetch<User>(`${API_BASE}/api/auth/users/me/`, {
       method: "GET",
-      headers: { Authorization: `Bearer ${tokens.access}` },
+      headers: { Authorization: `Bearer ${tokenResponse.access}` },
     });
 
     const responseData: SessionData = { authenticated: true, user };
     cachedSession = { data: responseData, expiry: now + REFRESH_TTL_MS };
     return responseData;
-  } catch (err) {
-    if (err instanceof ApiError) {
-      // If refresh token is invalid/blacklisted → force logout
-      if (
-        err.details &&
-        typeof err.details === "object" &&
-        "code" in err.details &&
-        (err.details as { code?: string }).code === "token_not_valid"
-      ) {
-        await clearSessionCache();
-        const origin =
-          process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-        await fetch(`${origin}/api/auth/logout`, {
-          method: "POST",
-        });
-        return {
-          authenticated: false,
-          message: "Session expired, please log in again.",
-        };
-      }
-
-      return {
-        authenticated: false,
-        message: err.message,
-        details: err.details,
-      };
-    }
-
-    return { authenticated: false };
+  } catch {
+    return { authenticated: false, message: "Unable to fetch user profile." };
   }
 }
 
@@ -117,4 +60,50 @@ export async function getSession(): Promise<SessionData> {
  */
 export async function clearSessionCache() {
   cachedSession = null;
+}
+
+
+export async function getAccessToken(): Promise<
+  { access: string } | { error: string }
+> {
+  const jar = await cookies();
+  const access = jar.get(ACCESS_TOKEN_COOKIE)?.value ?? null;
+  const refresh = jar.get(REFRESH_TOKEN_COOKIE)?.value ?? null;
+
+  // 1) If we still have access token, return it
+  if (access) {
+    return { access };
+  }
+
+  // 2) If there’s no refresh token → user not logged in
+  if (!refresh) {
+    return { error: "No active session. Please log in." };
+  }
+
+  // 3) Attempt refresh flow
+  try {
+    const tokens = await apiFetch<{ access: string; refresh?: string }>(
+      `${API_BASE}/api/auth/jwt/refresh/`,
+      { method: "POST", body: { refresh } }
+    );
+
+    if (tokens.refresh) {
+      await setAuthCookies(tokens.access, tokens.refresh);
+    } else {
+      await setAccessCookie(tokens.access);
+    }
+
+    return { access: tokens.access };
+  } catch (err) {
+    if (
+      err instanceof ApiError &&
+      err.details &&
+      typeof err.details === "object" &&
+      "code" in err.details &&
+      (err.details as { code?: string }).code === "token_not_valid"
+    ) {
+      return { error: "Session expired, please log in again." };
+    }
+    return { error: "Unable to refresh session. Please try again." };
+  }
 }

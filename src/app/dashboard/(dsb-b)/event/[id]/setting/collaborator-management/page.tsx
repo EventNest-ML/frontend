@@ -1,3 +1,4 @@
+import BackButton from "@/components/custom-ui/BackButton";
 import DeleteCollaboratorConfirmationDialog from "@/components/custom-ui/DeleteCollaboratorConfirmationDialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -16,14 +17,7 @@ import React from "react";
 const page = () => {
   return (
     <div className="space-y-6">
-      <Button
-        variant={"ghost"}
-        asChild
-      >
-        <Link href={"./"}>
-          <ArrowLeft className="h-4 w-4" /> Back
-        </Link>
-      </Button>
+      <BackButton/>
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">Collaborators Management</CardTitle>

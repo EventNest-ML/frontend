@@ -10,7 +10,8 @@ import {
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-const page = () => {
+const page = async({ params }: { params: Promise<{ id: string }> }) => {
+  const {id} = await params
   return (
     <div className="space-y-5 overflow-hidden">
       <Button
@@ -40,7 +41,7 @@ const page = () => {
           <div className="h-[300px] w-full bg-gray-400/20 animate-pulse rounded-md" />
         </CardContent>
       </Card>
-      <EventSettingsForm />
+      <EventSettingsForm eventId={id} />
     </div>
   );
 };

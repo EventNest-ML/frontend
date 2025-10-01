@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import QueryProvider from "@/components/QueryProvider";
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -22,7 +23,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`antialiased ${plusJakarta.className}`}>
-        <main>{children}</main>
+        <main>
+          <QueryProvider>{children}</QueryProvider>
+        </main>
         <Toaster position="top-center" />
       </body>
     </html>

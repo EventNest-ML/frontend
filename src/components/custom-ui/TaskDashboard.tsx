@@ -1,28 +1,39 @@
+"use client";
+
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { ScrollArea } from "../ui/scroll-area";
 import { Avatar, AvatarFallback } from "../ui/avatar";
-import { Calendar, MessageCircle } from "lucide-react";
+import { Calendar, MessageCircle, Plus } from "lucide-react";
 import { Button } from "../ui/button";
-import { Task } from "@/lib/data";
 import TaskDialog from "./TaskFormDialog";
 import { CommentSectionSheet } from "./CommentSection";
 import { Badge } from "../ui/badge";
 
+import { useUpdateTask, useDeleteTask, useCreateTask } from "@/hooks/query";
+import { Task } from "@/type";
+import { toast } from "sonner";
+
 type TaskDashboardProps = {
   tasks: Task[];
+  eventId: string;
 };
 
-export default function TaskDashboard({ tasks }: TaskDashboardProps) {
+export default function TaskDashboard({ tasks, eventId }: TaskDashboardProps) {
+  const createMutation = useCreateTask();
+
   const grouped = {
-    pending: tasks.filter((t) => t.status === "pending"),
-    "in-progress": tasks.filter((t) => t.status === "in-progress"),
-    completed: tasks.filter((t) => t.status === "completed"),
+    pending: tasks.filter((t) => t.status.toLowerCase() === "todo"),
+    "in-progress": tasks.filter(
+      (t) => t.status.toLowerCase() === "in-progress"
+    ),
+    completed: tasks.filter((t) => t.status.toLowerCase() === "done"),
   };
 
   const allTasks = tasks;
@@ -31,6 +42,9 @@ export default function TaskDashboard({ tasks }: TaskDashboardProps) {
     ...grouped["in-progress"],
     ...grouped.completed,
   ];
+
+  const updateMutation = useUpdateTask();
+  const deleteMutation = useDeleteTask();
 
   const getPriorityColor = (status: string) => {
     if (status === "pending") return "bg-red-500";
@@ -56,13 +70,12 @@ export default function TaskDashboard({ tasks }: TaskDashboardProps) {
                 />
                 <div className="space-y-[6px]">
                   <CardTitle className="font-medium tracking-wider">
-                    {task.title}
+                    {task.eventName}
                   </CardTitle>
                   <CardDescription>
                     Due: {task.dueDate || "No date"}
                   </CardDescription>
                   <div className="flex gap-4">
-                    {/* Collaborator */}
                     <div className="flex gap-3 items-center justify-center">
                       <Avatar className="rounded-lg size-[30px]">
                         <AvatarFallback className="text-[12px]">
@@ -71,7 +84,6 @@ export default function TaskDashboard({ tasks }: TaskDashboardProps) {
                       </Avatar>
                       <CardDescription>Erin Robinson</CardDescription>
                     </div>
-                    {/* Due date */}
                     <div className="flex gap-3 items-center justify-center">
                       <Calendar
                         size={20}
@@ -81,7 +93,6 @@ export default function TaskDashboard({ tasks }: TaskDashboardProps) {
                         {task.dueDate || "No date"}
                       </CardDescription>
                     </div>
-                    {/* Comments */}
                     <div className="flex gap-2 items-center justify-center">
                       <MessageCircle
                         size={20}
@@ -93,18 +104,24 @@ export default function TaskDashboard({ tasks }: TaskDashboardProps) {
                 </div>
               </CardHeader>
 
-              {/* Action Buttons */}
               <div className="flex items-center gap-2">
-                {task.status !== "completed" ? (
+                {task.status.toLowerCase() !== "done" ? (
                   <CardContent className="flex items-center gap-3">
                     <TaskDialog
                       title="Edit Task"
                       defaultValues={{
-                        taskName: task.title,
-                        assignee: "Amina Musa",
-                        dueDate: task.dueDate,
-                        status: task.status,
-                        description: "Secure and pay for the event venue",
+                        taskName: task.eventName,
+                        assignee: String(task.assignee ?? ""),
+                        dueDate: task.dueDate ?? "",
+                        status:
+                          task.status === "TODO"
+                            ? "pending"
+                            : task.status === "IN_PROGRESS"
+                            ? "in-progress"
+                            : task.status === "COMPLETED"
+                            ? "completed"
+                            : undefined,
+                        description: task.description ?? "",
                       }}
                     >
                       <Button
@@ -115,6 +132,7 @@ export default function TaskDashboard({ tasks }: TaskDashboardProps) {
                         Edit
                       </Button>
                     </TaskDialog>
+
                     <CommentSectionSheet task={task}>
                       <Button
                         size="sm"
@@ -124,16 +142,36 @@ export default function TaskDashboard({ tasks }: TaskDashboardProps) {
                         Comment
                       </Button>
                     </CommentSectionSheet>
+
                     <Button
                       size="sm"
+                      onClick={() =>
+                        updateMutation.mutate({
+                          taskId: task.id,
+                          payload: { status: "completed" },
+                          eventId,
+                        })
+                      }
                       className="bg-[#b357fa6d] hover:bg-[#b357fa6d]/80 text-black border border-[#B558FA]"
                     >
-                      Mark as complete
+                      {updateMutation.isPending ? "..." : "Mark as complete"}
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() =>
+                        deleteMutation.mutate({ taskId: task.id, eventId })
+                      }
+                    >
+                      Delete
                     </Button>
                   </CardContent>
                 ) : (
-                    <CardContent className="flex items-center gap-3">
-                      <Badge className="border-[#B558FA] text-[#B558FA] p-4 py-2 bg-transparent rounded-md">Completed</Badge>
+                  <CardContent className="flex items-center gap-3">
+                    <Badge className="border-[#B558FA] text-[#B558FA] p-4 py-2 bg-transparent rounded-md">
+                      Completed
+                    </Badge>
                   </CardContent>
                 )}
               </div>
@@ -149,70 +187,114 @@ export default function TaskDashboard({ tasks }: TaskDashboardProps) {
   return (
     <Card className="w-full h-full">
       <CardContent>
-        <Tabs
-          defaultValue="All"
-          className="w-full"
-        >
-          <TabsList className="flex w-full gap-3 bg-transparent">
-            <TabsTrigger
-              value="All"
-              className="bg-transparent border border-[#8A3BEF] p-4 py-5 font-semibold data-[state=active]:bg-[#B457FA4D]"
-            >
-              All
-            </TabsTrigger>
-            <TabsTrigger
-              value="my-tasks"
-              className="bg-transparent border border-[#8A3BEF] p-4 py-5 font-semibold data-[state=active]:bg-[#B457FA4D]"
-            >
-              My tasks
-            </TabsTrigger>
-            <TabsTrigger
-              value="pending"
-              className="bg-transparent border border-[#8A3BEF] p-4 py-5 font-semibold data-[state=active]:bg-[#B457FA4D]"
-            >
-              ToDo
-            </TabsTrigger>
-            <TabsTrigger
-              value="in-progress"
-              className="bg-transparent border border-[#8A3BEF] p-4 py-5 font-semibold data-[state=active]:bg-[#B457FA4D]"
-            >
-              In Progress
-            </TabsTrigger>
-            <TabsTrigger
-              value="completed"
-              className="bg-transparent border border-[#8A3BEF] p-4 py-5 font-semibold data-[state=active]:bg-[#B457FA4D]"
-            >
-              Completed
-            </TabsTrigger>
-          </TabsList>
-
-          {/* All tasks */}
-          <TabsContent
-            value="All"
-            className="mt-4"
+        {tasks.length > 0 ? (
+          <Tabs
+            defaultValue="All"
+            className="w-full"
           >
-            {renderTaskList(allTasks, "No tasks available")}
-          </TabsContent>
+            <TabsList className="flex w-full gap-3 bg-transparent">
+              <TabsTrigger
+                value="All"
+                className="bg-transparent border border-[#8A3BEF] p-4 py-5 font-semibold data-[state=active]:bg-[#B457FA4D]"
+              >
+                All
+              </TabsTrigger>
+              <TabsTrigger
+                value="my-tasks"
+                className="bg-transparent border border-[#8A3BEF] p-4 py-5 font-semibold data-[state=active]:bg-[#B457FA4D]"
+              >
+                My tasks
+              </TabsTrigger>
+              <TabsTrigger
+                value="pending"
+                className="bg-transparent border border-[#8A3BEF] p-4 py-5 font-semibold data-[state=active]:bg-[#B457FA4D]"
+              >
+                ToDo
+              </TabsTrigger>
+              <TabsTrigger
+                value="in-progress"
+                className="bg-transparent border border-[#8A3BEF] p-4 py-5 font-semibold data-[state=active]:bg-[#B457FA4D]"
+              >
+                In Progress
+              </TabsTrigger>
+              <TabsTrigger
+                value="completed"
+                className="bg-transparent border border-[#8A3BEF] p-4 py-5 font-semibold data-[state=active]:bg-[#B457FA4D]"
+              >
+                Completed
+              </TabsTrigger>
+            </TabsList>
 
-          {/* My tasks (priority order) */}
-          <TabsContent
-            value="my-tasks"
-            className="mt-4"
-          >
-            {renderTaskList(myTasks, "No tasks available")}
-          </TabsContent>
-
-          {/* Status-specific */}
-          {(["pending", "in-progress", "completed"] as const).map((status) => (
             <TabsContent
-              key={status}
-              value={status}
+              value="All"
               className="mt-4"
             >
-              {renderTaskList(grouped[status], `No ${status} tasks`)}
+              {renderTaskList(allTasks, "No tasks available")}
             </TabsContent>
-          ))}
-        </Tabs>
+            <TabsContent
+              value="my-tasks"
+              className="mt-4"
+            >
+              {renderTaskList(myTasks, "No tasks available")}
+            </TabsContent>
+
+            {(["pending", "in-progress", "completed"] as const).map(
+              (status) => (
+                <TabsContent
+                  key={status}
+                  value={status}
+                  className="mt-4"
+                >
+                  {renderTaskList(grouped[status], `No ${status} tasks`)}
+                </TabsContent>
+              )
+            )}
+          </Tabs>
+        ) : (
+          <div className="w-full h-[400px] flex flex-col items-center justify-center gap-2">
+            <CardTitle>Your task board is empty.</CardTitle>
+            <CardDescription>
+              Create, assign, and track tasks here to plan every detail of your
+              event.
+            </CardDescription>
+            <TaskDialog
+              title="Create New Task"
+              onSubmit={(payload) => {
+                createMutation.mutate(
+                  { eventId, payload },
+                  {
+                    onSuccess: (res) => {
+                      toast.success("Task created successfully 🎉", {
+                        className: "!bg-green-600 !text-white",
+                      });
+                    },
+                    onError: (err) => {
+                      if (!err) {
+                        toast.error(
+                          "Your session has expired. Please log in again.",
+                          {
+                            className: "!bg-red-600 !text-white",
+                          }
+                        );
+                      } else {
+                        toast.error(
+                          err instanceof Error
+                            ? err.message
+                            : "Something went wrong.",
+                          { className: "!bg-red-600 !text-white" }
+                        );
+                      }
+                    },
+                  }
+                );
+              }}
+            >
+              <Button className="bg-[#B558FA] hover:bg-[#B558FA]/80">
+                Add new <Plus />
+              </Button>
+            </TaskDialog>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

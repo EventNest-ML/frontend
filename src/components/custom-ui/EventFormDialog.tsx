@@ -13,7 +13,7 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormMessage
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -32,6 +32,8 @@ import { z } from "zod";
 import { Card } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
 import { eventFormSchema } from "@/lib/schema";
+import { useCreateEventWithInvites } from "@/hooks/query";
+import { toast } from "sonner";
 
 /* ----------------- Validation Schema ----------------- */
 
@@ -44,6 +46,7 @@ export default function CreateEventDialog({
 }) {
   const [open, setOpen] = React.useState(false);
   const [preview, setPreview] = React.useState<string | null>(null);
+  const { mutate: createEvent, isPending } = useCreateEventWithInvites();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(eventFormSchema),
@@ -60,10 +63,39 @@ export default function CreateEventDialog({
     },
   });
 
-  function onSubmit(values: FormValues) {
-    console.log("Create event payload:", values);
-    setOpen(false);
-  }
+ function onSubmit(values: FormValues) {
+   createEvent(
+     {
+       name: values.eventName,
+       date: values.startDate,
+       location: values.venue,
+       notes: values.description,
+       collaborators: values.collaborators!,
+     },
+     {
+       onSuccess: () => {
+         toast.success("Event created successfully", {
+           className: "!bg-green-600 !text-white",
+         });
+         form.reset();
+         setPreview(null);
+         setOpen(false);
+       },
+       onError: (err) => {
+         if (err == null) {
+           toast.error("Your session has expired. Please log in again.", {
+             className: "!bg-red-600 !text-white",
+           });
+         } else {
+           toast.error(
+             err instanceof Error ? err.message : "Something went wrong.",
+             { className: "!bg-red-600 !text-white" }
+           );
+         }
+       },
+     }
+   );
+ }
 
   const handleFileChange = (file?: File) => {
     if (!file) return;
@@ -237,6 +269,7 @@ export default function CreateEventDialog({
                           <div className="relative">
                             <Input
                               type="date"
+                              placeholder="Start Date"
                               className="pr-10 [appearance:none] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full input-field rounded-full"
                               {...field}
                             />
@@ -257,6 +290,7 @@ export default function CreateEventDialog({
                           <div className="relative">
                             <Input
                               type="date"
+                              placeholder="End Date"
                               className="pr-10 [appearance:none] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full input-field rounded-full"
                               {...field}
                             />
@@ -286,6 +320,7 @@ export default function CreateEventDialog({
                     <FormItem>
                       <div className="flex gap-2">
                         <Input
+                          id="invite-email"
                           className="input-field rounded-full pr-10"
                           placeholder="Email"
                           onKeyDown={(e) => {
@@ -304,11 +339,14 @@ export default function CreateEventDialog({
                           type="button"
                           className="bg-[#B558FA] hover:bg-[#B558FA]/70"
                           onClick={() => {
-                            // try to grab email from the previous sibling input
-                            const el = (
-                              document.activeElement as HTMLElement
-                            )?.querySelector("input");
-                            // fallback — no reliable ref here, user can press Enter instead
+                            const inviteInput = document.getElementById(
+                              "invite-email"
+                            ) as HTMLInputElement;
+                            const value = inviteInput.value.trim();
+                            if (value) {
+                              addCollaborator(value);
+                              inviteInput.value = "";
+                            }
                           }}
                         >
                           Invite

@@ -1,3 +1,4 @@
+import BackButton from "@/components/custom-ui/BackButton";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,14 +22,7 @@ import Link from "next/link";
 const page = () => {
   return (
     <div className="space-y-6 w-full">
-      <Button
-        variant={"ghost"}
-        asChild
-      >
-        <Link href={"./"}>
-          <ArrowLeft className="h-4 w-4" /> Back
-        </Link>
-      </Button>
+      <BackButton/>
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">Budget & Currency</CardTitle>

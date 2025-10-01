@@ -44,7 +44,7 @@ export default function TaskDialog({
   children,
   title,
   defaultValues,
-   onSubmit,
+  onSubmit,
 }: {
   children: React.ReactNode;
   title: string;
@@ -215,7 +215,7 @@ export default function TaskDialog({
                     type="submit"
                     className="p-6 bg-[#B558FA] hover:bg-[#B558FA]/70 flex-1"
                   >
-                    Update Task
+                    {title === "Create New Task" ? "Create" : "Update"} Task
                   </Button>
                 </div>
               </form>

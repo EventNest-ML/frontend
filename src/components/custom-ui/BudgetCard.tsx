@@ -1,9 +1,17 @@
-import { Event } from "@/lib/data";
+import { Event } from "@/type";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import BudgetStats from "./BudgetStats";
+import { demoEvents } from "@/lib/data";
 
-export default function BudgetCard({ event }: { event: Event }) {
-  if (!event.budget || !event.expenditure) return null;
+export default function BudgetCard({
+  event,
+  showBudgetStats = true,
+}: {
+  event?: Event;
+  showBudgetStats?: boolean;
+}) {
+  const dummyEvent = demoEvents[0];
+  if (!dummyEvent.budget || !dummyEvent.expenditure) return null;
 
   return (
     <Card>
@@ -22,14 +30,14 @@ export default function BudgetCard({ event }: { event: Event }) {
           </div>
           <div className="h-full flex flex-col justify-center items-center -mt-4">
             <p className="text-2xl font-semibold tracking-wide">
-              ₦{event.budget.toLocaleString()}
+              ₦{dummyEvent.budget.toLocaleString()}
             </p>
             <p className="text-sm mt-2">Total Planned Cost</p>
           </div>
         </div>
 
         {/* Expenditure Details */}
-       <BudgetStats event={event}/>
+        {showBudgetStats && <BudgetStats event={dummyEvent} />}
       </CardContent>
     </Card>
   );

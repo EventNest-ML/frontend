@@ -1,3 +1,5 @@
+"use client";
+import Loading from "@/app/loading";
 import { CalendarComp } from "@/components/custom-ui/Calender";
 import CreateEventDialog from "@/components/custom-ui/EventFormDialog";
 import ProgressCircle from "@/components/custom-ui/ProgressCircle";
@@ -8,12 +10,41 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useUserEvents } from "@/hooks/query";
 import { getSession } from "@/lib/auth-server";
 import { getCurrentDate, getGreeting } from "@/lib/utils";
+import { EventDetails } from "@/type";
+import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 
-const DashboardHome = async () => {
-  const session = await getSession();
+const DashboardHome = () => {
+  const { data: session } = useQuery({
+    queryKey: ["session"],
+    queryFn: () => getSession(),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const { data: eventDetails, isLoading, error } = useUserEvents();
+
+  if (!session || !eventDetails) {
+    return <Loading />;
+  }
+
+  const events = (eventDetails as EventDetails).events ?? [];
+  const collaboratedEvents =
+    (!isLoading &&
+      !error &&
+      events?.filter((event) =>
+        event.collaborators?.some(
+          (colab) =>
+            colab.fullname.toLowerCase() ===
+              `${session.user.firstname.toLowerCase()} ${session.user.lastname.toLowerCase()}` &&
+            colab.role === "COLLABORATOR"
+        )
+      ).length) ||
+    0;
+
+  const pastEvents = events.filter((e) => new Date(e.date) < new Date()).length;
 
   return (
     <div className="flex flex-col gap-8 w-full pb-10">
@@ -98,25 +129,34 @@ const DashboardHome = async () => {
                   Total Events
                 </p>
                 <div className="flex items-center justify-center mt-2">
-                  <span className="text-4xl md:text-5xl">0</span>
+                  <span className="text-4xl md:text-5xl">{events?.length}</span>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {["Owned Events", "Collaborated Events", "Past Events"].map(
-                  (title, idx) => (
-                    <Card
-                      key={idx}
-                      className="text-center py-4 sm:py-5 h-[120px] sm:h-[150px] hover:shadow-md transition"
-                    >
-                      <CardTitle className="font-semibold text-sm md:text-base">
-                        {title}
-                      </CardTitle>
-                      <CardContent className="text-xl md:text-2xl font-bold w-full h-full flex justify-center items-center">
-                        0
-                      </CardContent>
-                    </Card>
-                  )
-                )}
+                <Card className="text-center py-4 sm:py-5 h-[120px] sm:h-[150px] hover:shadow-md transition">
+                  <CardTitle className="font-semibold text-sm md:text-base">
+                    Owned Events
+                  </CardTitle>
+                  <CardContent className="text-xl md:text-2xl font-bold w-full h-full flex justify-center items-center">
+                    {events?.length}
+                  </CardContent>
+                </Card>
+                <Card className="text-center py-4 sm:py-5 h-[120px] sm:h-[150px] hover:shadow-md transition">
+                  <CardTitle className="font-semibold text-sm md:text-base">
+                    Collaborated Events
+                  </CardTitle>
+                  <CardContent className="text-xl md:text-2xl font-bold w-full h-full flex justify-center items-center">
+                    {collaboratedEvents}
+                  </CardContent>
+                </Card>
+                <Card className="text-center py-4 sm:py-5 h-[120px] sm:h-[150px] hover:shadow-md transition">
+                  <CardTitle className="font-semibold text-sm md:text-base">
+                    Past Events
+                  </CardTitle>
+                  <CardContent className="text-xl md:text-2xl font-bold w-full h-full flex justify-center items-center">
+                    {pastEvents}
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </CardContent>
@@ -145,7 +185,7 @@ const DashboardHome = async () => {
           </CardHeader>
           <CardContent className="flex flex-col items-center">
             <ProgressCircle
-              value={30}
+              value={0}
               size={110}
             />
           </CardContent>

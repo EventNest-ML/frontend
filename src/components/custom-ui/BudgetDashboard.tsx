@@ -129,9 +129,10 @@ const BudgetDashboard = () => {
               <CommentSectionSheet
                 task={{
                   dueDate: "2024-12-01",
-                  title: "Venue Booking",
-                  status: "pending",
-                  id: "1",
+                  eventName: "Venue Booking",
+                  status: "TODO",
+                  assignee: 1,
+                  id: 1,
                 }}
               >
                 <Button

@@ -1,10 +1,11 @@
 "use client";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { PollDialog } from "./PollDialog";
+import { CustomDialog } from "./Dialog";
+import { Menu, X } from "lucide-react";
 
 export type SidebarLinkItem = {
   label: string;
@@ -24,6 +25,10 @@ export function AppSidebar({ children, links, checker }: AppSidebarProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
+  const toggleSidebar = () => {
+    setOpen(!open);
+  };
+
   return (
     <div
       className={cn(
@@ -37,25 +42,32 @@ export function AppSidebar({ children, links, checker }: AppSidebarProps) {
       >
         <SidebarBody className="flex justify-between gap-10">
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden pl-4">
-            {open ? (
-              <div className="flex items-center gap-2">
-                {/* Toggle Icon + Title */}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-text-align-start"
-                >
-                  <path d="M21 5H3" />
-                  <path d="M15 12H3" />
-                  <path d="M17 19H3" />
-                </svg>
+            {/* Header with toggle icon, title and toggle button */}
+            <div className="flex items-center justify-between mb-8 pl-3">
+              <button
+                className="flex items-center gap-2 cursor-pointer"
+                onClick={toggleSidebar}
+              >
+                {open ? (
+                  <X />
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="lucide lucide-text-align-start"
+                  >
+                    <path d="M21 5H3" />
+                    <path d="M15 12H3" />
+                    <path d="M17 19H3" />
+                  </svg>
+                )}
                 <motion.span
                   animate={{
                     display: open ? "inline-block" : "none",
@@ -67,28 +79,11 @@ export function AppSidebar({ children, links, checker }: AppSidebarProps) {
                 >
                   EventNest Menu
                 </motion.span>
-              </div>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-text-align-start"
-              >
-                <path d="M21 5H3" />
-                <path d="M15 12H3" />
-                <path d="M17 19H3" />
-              </svg>
-            )}
+              </button>
+            </div>
 
             {/* Links */}
-            <div className="mt-16 flex flex-col gap-5 w-full h-full">
+            <div className="flex flex-col gap-5 w-full h-full">
               {links.map((link, idx) => {
                 const isActive =
                   checker === "strict"
@@ -106,7 +101,7 @@ export function AppSidebar({ children, links, checker }: AppSidebarProps) {
                       <button
                         onClick={async () => {
                           await fetch("/api/auth/logout", { method: "POST" });
-                          router.replace("/signin"); // force redirect
+                          router.replace("/signin"); 
                         }}
                         className="flex items-center gap-2 w-full text-left transition-colors duration-200 cursor-pointer"
                       >
@@ -124,7 +119,7 @@ export function AppSidebar({ children, links, checker }: AppSidebarProps) {
                         </motion.span>
                       </button>
                     ) : link.label === "Poll" ? (
-                      <PollDialog>
+                      <CustomDialog title="Poll Creation">
                         <div
                           className={cn(
                             "flex items-center justify-start gap-2 group/sidebar py-2 transition-colors duration-200 cursor-pointer"
@@ -146,15 +141,17 @@ export function AppSidebar({ children, links, checker }: AppSidebarProps) {
                             {link.label}
                           </motion.span>
                         </div>
-                      </PollDialog>
+                      </CustomDialog>
                     ) : (
                       link.href && (
                         <>
                           <SidebarLink
+                            href={link.href}
                             link={{
-                              ...(link as SidebarLinkItem),
+                              label: link.label,
                               href: link.href,
-                            }} // force href presence
+                              icon: link.icon,
+                            }}
                             className={cn(
                               "transition-colors duration-200",
                               isActive

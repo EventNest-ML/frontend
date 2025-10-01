@@ -1,4 +1,5 @@
 "use client";
+
 import {
   Form,
   FormControl,
@@ -15,9 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { eventFormSchema } from "@/lib/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Loader } from "lucide-react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import {
@@ -27,10 +27,21 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
+import { useUserEvents, useUpdateEvent } from "@/hooks/query";
+import { EventDetails } from "@/type";
+import { useEffect } from "react";
+import { toast } from "sonner";
+import { eventFormSchema } from "@/lib/schema";
 
 type FormValues = z.infer<typeof eventFormSchema>;
 
-const EventSettingsForm = () => {
+const EventSettingsForm = ({ eventId }: { eventId: string }) => {
+  const { data: eventDetails } = useUserEvents();
+  const { mutateAsync: updateEvent, isPending } = useUpdateEvent();
+
+  const events = (eventDetails as EventDetails)?.events ?? [];
+  const event = events.find((e) => e.id === eventId);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
@@ -46,8 +57,39 @@ const EventSettingsForm = () => {
     },
   });
 
-  function onSubmit(values: FormValues) {
-    console.log("Create event payload:", values);
+  useEffect(() => {
+    if (event) {
+      form.reset({
+        eventName: event.name,
+        budget: "",
+        venue: event.location || "",
+        eventType: "",
+        description: event.notes || "",
+        startDate: event.date ? event.date.split("T")[0] : "",
+        endDate: event.date ? event.date.split("T")[0] : "",
+        collaborators: [],
+        image: null,
+      });
+    }
+  }, [event, form]);
+
+  if (!eventDetails) return <p>Loading...</p>;
+
+  if (!event) return <p>Event not found</p>;
+
+  async function onSubmit(values: FormValues) {
+    try {
+      await updateEvent({
+        id: event?.id || "",
+        name: values.eventName,
+        date: values.startDate,
+        location: values.venue,
+        notes: values.description,
+      });
+      toast.success("Event updated successfully");
+    } catch (err) {
+      toast.error("Failed to update event");
+    }
   }
 
   return (
@@ -55,13 +97,14 @@ const EventSettingsForm = () => {
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <Card>
           <CardHeader>
-            <CardTitle>Event Detials</CardTitle>
+            <CardTitle>Event Details</CardTitle>
             <CardDescription>
-              Manage your events basic information
+              Manage your event&apos;s basic information
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-5">
+              {/* Event Name */}
               <FormField
                 control={form.control}
                 name="eventName"
@@ -78,6 +121,8 @@ const EventSettingsForm = () => {
                   </FormItem>
                 )}
               />
+
+              {/* Budget */}
               <FormField
                 control={form.control}
                 name="budget"
@@ -96,6 +141,7 @@ const EventSettingsForm = () => {
                 )}
               />
 
+              {/* Venue */}
               <FormField
                 control={form.control}
                 name="venue"
@@ -112,6 +158,8 @@ const EventSettingsForm = () => {
                   </FormItem>
                 )}
               />
+
+              {/* Event Type */}
               <FormField
                 control={form.control}
                 name="eventType"
@@ -119,7 +167,7 @@ const EventSettingsForm = () => {
                   <FormItem>
                     <FormControl>
                       <Select
-                        onValueChange={(val) => field.onChange(val)}
+                        onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <SelectTrigger className="input-field rounded-full">
@@ -137,6 +185,8 @@ const EventSettingsForm = () => {
                   </FormItem>
                 )}
               />
+
+              {/* Description */}
               <FormField
                 control={form.control}
                 name="description"
@@ -153,7 +203,8 @@ const EventSettingsForm = () => {
                   </FormItem>
                 )}
               />
-              {/* Dates row with icon positioned */}
+
+              {/* Dates */}
               <FormField
                 control={form.control}
                 name="startDate"
@@ -164,6 +215,7 @@ const EventSettingsForm = () => {
                         <Input
                           type="date"
                           className="pr-10 [appearance:none] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full input-field rounded-full"
+                          {...field}
                           {...field}
                         />
                         <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -196,6 +248,15 @@ const EventSettingsForm = () => {
             </div>
           </CardContent>
         </Card>
+        <div className="w-fit ml-auto">
+          <button
+            type="submit"
+            disabled={isPending}
+            className="mt-4 bg-[#B558FA] text-white px-4 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50"
+          >
+            {isPending ? <Loader className="animate-spin"/> : "Save Changes"}
+          </button>
+        </div>
       </form>
     </Form>
   );

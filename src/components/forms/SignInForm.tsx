@@ -55,7 +55,7 @@ const SignInForm = () => {
 
       // Logged in: tokens are in httpOnly cookies; user is returned
       toast.success("Logged in successfully!");
-      router.push("/dashboard");
+      router.push("/dashboard/home");
     } catch (e) {
       form.setError("password", {
         message: "Something went wrong. Please try again.",

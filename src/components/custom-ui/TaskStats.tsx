@@ -1,14 +1,13 @@
+// components/custom-ui/TaskStats.tsx
 import { CheckCircle, Clock, Loader } from "lucide-react";
-import React from "react";
 import { Card } from "../ui/card";
-import { Event } from "@/lib/data";
+import { Task } from "@/type";
 
-const TaskStats = ({ event }: { event: Event }) => {
-  const pending = event.tasks.filter((t) => t.status === "pending").length;
-  const inProgress = event.tasks.filter(
-    (t) => t.status === "in-progress"
-  ).length;
-  const completed = event.tasks.filter((t) => t.status === "completed").length;
+const TaskStats = ({ tasks }: { tasks: Task[] }) => {
+  const pending = tasks && tasks.filter((t) => t.status.toLowerCase() === "todo").length;
+  const inProgress = tasks && tasks.filter((t) => t.status.toLowerCase() === "in-progress").length;
+  const completed = tasks && tasks.filter((t) => t.status.toLowerCase() === "done").length;
+
   return (
     <div className="grid grid-cols-3 gap-4 text-center">
       <Card className="p-5 text-center h-[180px]">

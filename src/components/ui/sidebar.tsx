@@ -66,17 +66,24 @@ export const Sidebar = ({
   animate?: boolean;
 }) => {
   return (
-    <SidebarProvider open={open} setOpen={setOpen} animate={animate}>
+    <SidebarProvider
+      open={open}
+      setOpen={setOpen}
+      animate={animate}
+    >
       {children}
     </SidebarProvider>
   );
 };
 
-export const SidebarBody = (props: React.ComponentProps<typeof motion.div>) => {
+export const SidebarBody = (props: {
+  className?: string;
+  children: React.ReactNode;
+}) => {
   return (
     <>
       <DesktopSidebar {...props} />
-      <MobileSidebar {...(props as React.ComponentProps<"div">)} />
+      <MobileSidebar {...props} />
     </>
   );
 };
@@ -84,9 +91,12 @@ export const SidebarBody = (props: React.ComponentProps<typeof motion.div>) => {
 export const DesktopSidebar = ({
   className,
   children,
-  ...props
-}: React.ComponentProps<typeof motion.div>) => {
-  const { open, setOpen, animate } = useSidebar();
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) => {
+  const { open, animate } = useSidebar();
+
   return (
     <motion.div
       className={cn(
@@ -97,9 +107,6 @@ export const DesktopSidebar = ({
         width: animate ? (open ? "250px" : "100px") : "250px",
         paddingLeft: animate ? (open ? "10px" : "10px") : "30px",
       }}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-      {...props}
     >
       {children}
     </motion.div>
@@ -109,22 +116,30 @@ export const DesktopSidebar = ({
 export const MobileSidebar = ({
   className,
   children,
-  ...props
-}: React.ComponentProps<"div">) => {
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) => {
   const { open, setOpen } = useSidebar();
+
+  const toggleSidebar = () => {
+    setOpen(!open);
+  };
+
   return (
     <>
       <div
         className={cn(
           "h-10 px-4 py-4 flex flex-row md:hidden items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full z-50"
         )}
-        {...props}
       >
         <div className="flex justify-end z-20 w-full">
-          <Menu
-            className="text-neutral-800 dark:text-neutral-200 cursor-pointer"
-            onClick={() => setOpen(!open)}
-          />
+          <button
+            onClick={toggleSidebar}
+            className="p-2 rounded-md transition-colors duration-200 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+          >
+            <Menu className="text-neutral-800 dark:text-neutral-200 w-5 h-5" />
+          </button>
         </div>
         <AnimatePresence>
           {open && (
@@ -141,11 +156,14 @@ export const MobileSidebar = ({
                 className
               )}
             >
-              <div
-                className="absolute right-10 top-10 z-50 text-neutral-800 dark:text-neutral-200 cursor-pointer"
-                onClick={() => setOpen(!open)}
-              >
-                <X />
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-lg font-semibold">Menu</h2>
+                <button
+                  onClick={toggleSidebar}
+                  className="p-2 rounded-md transition-colors duration-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                >
+                  <X className="text-neutral-800 dark:text-neutral-200 w-5 h-5" />
+                </button>
               </div>
               {children}
             </motion.div>
@@ -164,15 +182,14 @@ export const SidebarLink = ({
 }: {
   link: Links;
   className?: string;
-    props?: LinkProps;
-  checker?: "strict"
-}) => {
+  checker?: "strict";
+} & LinkProps) => {
   const { open, animate } = useSidebar();
   const pathname = usePathname();
-    const isActive =
-      checker === "strict"
-        ? pathname === link.href
-        : pathname.includes(link.href!);
+  const isActive =
+    checker === "strict"
+      ? pathname === link.href
+      : pathname.includes(link.href!);
 
   return (
     <Link

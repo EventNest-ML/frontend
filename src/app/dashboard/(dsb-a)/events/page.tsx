@@ -12,8 +12,48 @@ import {
 } from "@/components/ui/card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { demoEvents as dummyEvents } from "@/lib/data";
+import { useUserEvents } from "@/hooks/query";
+import Loading from "@/app/loading";
+import { EventDetails } from "@/type";
+import { useQuery } from "@tanstack/react-query";
+import { getSession } from "@/lib/auth-server";
 
 const EventDashboard = () => {
+    const { data: session } = useQuery({
+      queryKey: ["session"],
+      queryFn: () => getSession(),
+      staleTime: 1000 * 60 * 5,
+    });
+  const { data: eventDetails, isLoading, error } = useUserEvents();
+
+  if (!eventDetails || !session) {
+    return <Loading />;
+  }
+
+  if ("shouldRedirect" in eventDetails && eventDetails.shouldRedirect) {
+    if (typeof window !== "undefined") {
+      window.location.href = "/signup";
+    }
+    return <div className="p-6">{eventDetails.message ?? "Redirecting…"}</div>;
+  }
+
+  const events = (eventDetails as EventDetails).events ?? [];
+
+  const collaboratedEvents =
+    (!isLoading &&
+      !error &&
+      events?.filter((event) =>
+        event.collaborators?.some(
+          (colab) =>
+            colab.fullname.toLowerCase() ===
+              `${session.user.firstname.toLowerCase()} ${session.user.lastname.toLowerCase()}` &&
+            colab.role === "COLLABORATOR"
+        )
+      ).length) ||
+    0;
+  const pastEvents =
+    events && events.filter((e) => new Date(e.date) < new Date()).length;
+
   return (
     <div className="flex flex-col gap-8">
       {/* Top Row */}
@@ -21,7 +61,7 @@ const EventDashboard = () => {
         <Card className="col-span-3 bg-gradient-to-r from-[#8A3BEF] to-[#B457FA] text-white rounded-xl flex flex-col items-center justify-center h-[150px] text-2xl font-bold p-[20px]">
           <p className="font-bold text-[14px] text-center">Total Events</p>
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-5xl">{dummyEvents.length}</span>
+            <span className="text-5xl">{events?.length}</span>
           </div>
         </Card>
         <Card className="col-span-2 flex flex-row p-0 px-6 items-center justify-between">
@@ -74,18 +114,28 @@ const EventDashboard = () => {
           <CardContent className="h-full">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 h-full">
               <Card className="text-center py-5 h-full">
-                <CardTitle className="font-semibold mt-5">Owned Events</CardTitle>
+                <CardTitle className="font-semibold mt-5">
+                  Owned Events
+                </CardTitle>
                 <CardContent className="text-4xl font-bold flex items-center justify-center w-full h-full">
-                  {dummyEvents.length}
+                  {events?.length}
                 </CardContent>
               </Card>
               <Card className="text-center py-5 h-full">
-                <CardTitle className="font-semibold mt-5">Collaborated</CardTitle>
-                <CardContent className="text-2xl font-bold flex items-center justify-center w-full h-full">0</CardContent>
+                <CardTitle className="font-semibold mt-5">
+                  Collaborated
+                </CardTitle>
+                <CardContent className="text-2xl font-bold flex items-center justify-center w-full h-full">
+                  {collaboratedEvents}
+                </CardContent>
               </Card>
               <Card className="text-center py-5 h-full">
-                <CardTitle className="font-semibold mt-5">Past Events</CardTitle>
-                <CardContent className="text-2xl font-bold flex items-center justify-center w-full h-full">0</CardContent>
+                <CardTitle className="font-semibold mt-5">
+                  Past Events
+                </CardTitle>
+                <CardContent className="text-2xl font-bold flex items-center justify-center w-full h-full">
+                  {pastEvents}
+                </CardContent>
               </Card>
             </div>
           </CardContent>
@@ -101,14 +151,14 @@ const EventDashboard = () => {
             <CardTitle>Created Events</CardTitle>
           </CardHeader>
           <CardContent>
-            {dummyEvents.length === 0 ? (
+            {events?.length === 0 ? (
               <div className="flex flex-col items-center w-full h-full min-h-[80px] justify-center text-sm text-muted-foreground">
                 All created events will be displayed here
               </div>
             ) : (
               <ScrollArea className="w-full">
                 <div className="flex gap-4 md:grid md:grid-cols-2 lg:grid-cols-3">
-                  {dummyEvents.map((event) => (
+                  {events?.map((event) => (
                     <div
                       key={event.id}
                       className="min-w-[250px] md:min-w-0"

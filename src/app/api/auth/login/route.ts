@@ -13,6 +13,8 @@ export async function POST(req: Request) {
       { method: "POST", body: { email, password } }
     );
 
+    console.log(tokens)
+
     // 2) Set cookies
     setAuthCookies(tokens.access, tokens.refresh);
 

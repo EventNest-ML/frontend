@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Task } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/sheet";
 import { Calendar, User } from "lucide-react";
 import { Separator } from "../ui/separator";
+import { Task } from "@/type";
 
 export function CommentSectionSheet({
   children,
@@ -40,7 +40,7 @@ export function CommentSectionSheet({
       <SheetContent className="pl-3 pt-7 flex flex-col gap-0 md:max-w-[500px]">
         {/* Header */}
         <SheetHeader>
-          <SheetTitle className="text-xl font-bold">{task.title}</SheetTitle>
+          <SheetTitle className="text-xl font-bold">{task.eventName}</SheetTitle>
           <SheetDescription className="mt-3">
             <h1 className="text-lg font-semibold">Description</h1>
             <span>Secure the venue for the event and mak payment</span>

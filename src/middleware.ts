@@ -21,7 +21,7 @@ export function middleware(req: NextRequest) {
   // 2) Redirect authenticated users away from signin/signup
   const isAuthPage = AUTH_PAGES.some((p) => pathname.startsWith(p));
   if (isAuthPage && hasRefresh) {
-    url.pathname = "/dashboard";
+    url.pathname = "/dashboard/home";
     return NextResponse.redirect(url);
   }
 

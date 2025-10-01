@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
-import { getSession } from "@/lib/auth-server";
-import { ToastBridge } from "@/components/custom-ui/ToastBridge";
+// import { getSession } from "@/lib/auth-server";
+// import { ToastBridge } from "@/components/custom-ui/ToastBridge";
 
 type RouteGuardProps = {
   children: ReactNode;
@@ -9,11 +9,11 @@ type RouteGuardProps = {
 export async function RouteGuard({
   children,
 }: RouteGuardProps) {
-  const session = await getSession();
+  // const session = await getSession();
   return (
     <>
       <>
-        <ToastBridge
+        {/* <ToastBridge
           message={session.message}
           variant="error"
         />
@@ -23,7 +23,7 @@ export async function RouteGuard({
               {session.message}
             </p>
           </div>
-        )}
+        )} */}
       </>
       {children}
     </>
