@@ -176,7 +176,6 @@ export const SidebarLink = ({
 
   return (
     <Link
-      href={link.href}
       className={cn(
         "flex items-center justify-start gap-2 group/sidebar py-2 transition-colors duration-200",
         isActive && "text-white font-medium",
