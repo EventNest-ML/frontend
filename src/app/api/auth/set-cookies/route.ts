@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   if (!access || !refresh) {
     return NextResponse.json({ error: "Missing tokens" }, { status: 400 });
   }
-  setAuthCookies(access, refresh);
+  await setAuthCookies(access, refresh);
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ ok: true });
 }

@@ -12,11 +12,8 @@ export async function POST(req: Request) {
       `${API_BASE}/api/auth/jwt/create/`,
       { method: "POST", body: { email, password } }
     );
-
-    console.log(tokens)
-
     // 2) Set cookies
-    setAuthCookies(tokens.access, tokens.refresh);
+    await setAuthCookies(tokens.access, tokens.refresh);
 
     // 3) Fetch user profile
     // eslint-disable-next-line
