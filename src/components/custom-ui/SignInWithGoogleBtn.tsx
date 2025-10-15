@@ -8,8 +8,7 @@ const SignInWithGoogleBtn = ({
   isLoading?: boolean;
 }) => {
   const handleGoogleSignIn = () => {
-    window.location.href =
-      "https://eventnest-api.onrender.com/accounts/google/login/";
+    window.location.href = "/api/auth/google/login";
   };
 
   return (

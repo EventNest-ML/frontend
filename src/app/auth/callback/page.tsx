@@ -18,9 +18,17 @@ export default function AuthCallbackPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ access, refresh }),
-      }).then(() => {
-        router.replace("/dashboard");
-      });
+      })
+        .then((res) => {
+          if (res.ok) {
+            router.replace("/dashboard/home");
+          } else {
+            router.replace("/signin?error=cookie_set_failed");
+          }
+        })
+        .catch(() => {
+          router.replace("/signin?error=cookie_set_failed");
+        });
     } else {
       router.replace("/signin?error=oauth_failed");
     }
