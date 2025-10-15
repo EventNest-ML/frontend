@@ -41,7 +41,7 @@ export default function ActivatePageClient({
           setCountdown((prev) => {
             if (prev === 1) {
               clearInterval(timer);
-              router.push("/login");
+              router.push("/signin");
             }
             return prev - 1;
           });
