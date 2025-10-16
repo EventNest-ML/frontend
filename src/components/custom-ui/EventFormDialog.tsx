@@ -26,6 +26,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon, Camera, Plus } from "lucide-react";
+import Image from "next/image";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -46,7 +47,7 @@ export default function CreateEventDialog({
 }) {
   const [open, setOpen] = React.useState(false);
   const [preview, setPreview] = React.useState<string | null>(null);
-  const { mutate: createEvent, isPending } = useCreateEventWithInvites();
+  const { mutate: createEvent } = useCreateEventWithInvites();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(eventFormSchema),
@@ -64,12 +65,17 @@ export default function CreateEventDialog({
   });
 
  function onSubmit(values: FormValues) {
+   const toISO = (d: string) => new Date(d).toISOString();
+
    createEvent(
      {
        name: values.eventName,
-       date: values.startDate,
        location: values.venue,
+       type: values.eventType,
        notes: values.description,
+       start_date: toISO(values.startDate),
+       end_date: toISO(values.endDate),
+       budget_amount: values.budget || undefined,
        collaborators: values.collaborators!,
      },
      {
@@ -142,9 +148,11 @@ export default function CreateEventDialog({
                         <div className="flex justify-center">
                           <label className="w-32 h-32 flex items-center justify-center rounded-full border-2 border-dashed cursor-pointer bg-muted/20 overflow-hidden">
                             {preview ? (
-                              <img
+                              <Image
                                 src={preview}
                                 alt="Preview"
+                                width={128}
+                                height={128}
                                 className="w-full h-full object-cover"
                               />
                             ) : (

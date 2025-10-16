@@ -11,7 +11,10 @@ export default function BudgetCard({
   showBudgetStats?: boolean;
 }) {
   const dummyEvent = demoEvents[0];
-  if (!dummyEvent.budget || !dummyEvent.expenditure) return null;
+  const budgetAmount =
+    typeof event?.budget_amount === "number"
+      ? event?.budget_amount
+      : Number(event?.budget_amount ?? 0);
 
   return (
     <Card>
@@ -30,14 +33,16 @@ export default function BudgetCard({
           </div>
           <div className="h-full flex flex-col justify-center items-center -mt-4">
             <p className="text-2xl font-semibold tracking-wide">
-              ₦{dummyEvent.budget.toLocaleString()}
+              ₦{Number(budgetAmount || 0).toLocaleString()}
             </p>
             <p className="text-sm mt-2">Total Planned Cost</p>
           </div>
         </div>
 
         {/* Expenditure Details */}
-        {showBudgetStats && <BudgetStats event={dummyEvent} />}
+        {showBudgetStats && dummyEvent?.expenditure && (
+          <BudgetStats event={dummyEvent} />
+        )}
       </CardContent>
     </Card>
   );

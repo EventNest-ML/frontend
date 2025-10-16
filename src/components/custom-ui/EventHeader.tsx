@@ -36,7 +36,10 @@ export default function EventHeader({ event }: { event: Event }) {
         (c) => c.role.toLowerCase() === "admin"
       )?.fullname) ||
     "N/A";
-  const startDate = new Date(event.date).toLocaleDateString();
+  const startDate = new Date(event.start_date ?? event.date).toLocaleDateString();
+  const endDate = event.end_date
+    ? new Date(event.end_date).toLocaleDateString()
+    : startDate;
   const eventId = event.id.split("-")[0].toUpperCase();
 
   return (
@@ -76,7 +79,7 @@ export default function EventHeader({ event }: { event: Event }) {
 
         <p className="text-sm text-gray-500">
           <span className="font-semibold text-black">End Date:</span>{" "}
-          {event.date}
+          {endDate}
         </p>
       </CardContent>
 

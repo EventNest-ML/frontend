@@ -2,7 +2,6 @@ import BackButton from "@/components/custom-ui/BackButton";
 import DeleteCollaboratorConfirmationDialog from "@/components/custom-ui/DeleteCollaboratorConfirmationDialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,8 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ArrowLeft, Crown, User, UserX } from "lucide-react";
-import Link from "next/link";
+import { Crown, User, UserX } from "lucide-react";
 import React from "react";
 
 const page = () => {

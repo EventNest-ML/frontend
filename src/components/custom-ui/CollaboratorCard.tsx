@@ -1,5 +1,4 @@
 import { fetchEventCollaborator } from "@/lib/server-actions";
-import { Collaborator } from "@/type";
 import { CardContent } from "../ui/card";
 
 export default async function CollaboratorsCard({ id }: { id: string }) {

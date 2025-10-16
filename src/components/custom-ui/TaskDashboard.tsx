@@ -263,7 +263,7 @@ export default function TaskDashboard({ tasks, eventId }: TaskDashboardProps) {
                 createMutation.mutate(
                   { eventId, payload },
                   {
-                    onSuccess: (res) => {
+                    onSuccess: () => {
                       toast.success("Task created successfully 🎉", {
                         className: "!bg-green-600 !text-white",
                       });
