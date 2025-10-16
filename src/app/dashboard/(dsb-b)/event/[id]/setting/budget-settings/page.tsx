@@ -1,3 +1,5 @@
+"use client";
+
 import BackButton from "@/components/custom-ui/BackButton";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,8 +20,70 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useUpdateEvent, useUserEvents } from "@/hooks/query";
+import { EventDetails } from "@/type";
+import { toast } from "sonner";
 
 const page = () => {
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const { data: eventDetails } = useUserEvents();
+  const { mutateAsync: updateEvent, isPending } = useUpdateEvent();
+
+  const id = String(params?.id ?? "");
+  const events = (eventDetails as EventDetails)?.events ?? [];
+  const event = useMemo(() => events.find((e) => e.id === id), [events, id]);
+
+  const [budget, setBudget] = useState<string>("");
+
+  useEffect(() => {
+    if (event?.budget_amount !== undefined && event?.budget_amount !== null) {
+      setBudget(String(event.budget_amount));
+    }
+  }, [event]);
+
+  async function onSave() {
+    try {
+      const amount = budget.trim() === "" ? undefined : Number(budget);
+      await updateEvent({ id, budget_amount: amount });
+      toast.success("Budget updated successfully");
+      router.push(`/dashboard/event/${id}/home`);
+    } catch (err) {
+      toast.error("Failed to update budget");
+    }
+  }
+
+  const estimatedBudget = Number(budget || event?.budget_amount || 0);
+  const currentExpenditure = 0; // TODO: wire real expenditure when backend is ready
+  const balance = Math.max(estimatedBudget - currentExpenditure, 0);
+
+  if (!eventDetails) {
+    return (
+      <div className="p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Loading Budget Settings…</CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Event not found</CardTitle>
+            <CardDescription>We couldn’t find this event.</CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 w-full">
       <BackButton/>
@@ -64,6 +128,11 @@ const page = () => {
               <Input
                 placeholder="Estimated Budget"
                 className="rounded-xl bg-gray-400/10 py-6"
+                type="number"
+                min={0}
+                step={1}
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
               />
             </div>
             <div className="w-full">
@@ -92,7 +161,7 @@ const page = () => {
                   Estimated Budget
                 </span>
                 <span className="font-medium p-3 py-2 rounded-md bg-[#8A3BEF] text-white">
-                  ₦0.00
+                  ₦{Number(estimatedBudget).toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -100,13 +169,13 @@ const page = () => {
                   Current Expenditure
                 </span>
                 <span className="font-medium p-3 py-2 rounded-md border border-[#8A3BEF]">
-                  ₦0.00
+                  ₦{Number(currentExpenditure).toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Balance</span>
                 <span className="font-medium p-3 py-2 rounded-md border border-[#8A3BEF] text-green-500">
-                  ₦0.00
+                  ₦{Number(balance).toLocaleString()}
                 </span>
               </div>
             </CardContent>
@@ -114,8 +183,12 @@ const page = () => {
         </CardContent>
       </Card>
       <div className="w-full flex justify-end">
-        <Button className="w-fit py-6 bg-[#8A3BEF] text-white">
-          Save Changes
+        <Button
+          onClick={onSave}
+          disabled={isPending}
+          className="w-fit py-6 bg-[#8A3BEF] text-white disabled:opacity-50"
+        >
+          {isPending ? "Saving…" : "Save Changes"}
         </Button>
       </div>
     </div>

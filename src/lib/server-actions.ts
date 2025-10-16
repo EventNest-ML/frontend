@@ -3,7 +3,7 @@ import { API_BASE } from "@/lib/env";
 import { apiFetch } from "@/lib/http";
 import { getAccessToken } from "./auth-server";
 import type { EventDetails, Collaborator, Collab, Task, TaskFromBackend } from "@/type";
-import { mapBackendTask, uiToBackendStatus } from "./utils";
+import { mapBackendTask, uiToBackendStatus, mapBackendEvent } from "./utils";
 
 export async function handleAuthFailure(
   message?: string
@@ -23,9 +23,22 @@ export async function fetchUserEvents(): Promise<
     return handleAuthFailure(tokenResponse.error);
   }
 
-  return apiFetch<EventDetails>(`${API_BASE}/api/events/`, {
+  const raw = await apiFetch<any>(`${API_BASE}/api/events/`, {
     headers: { Authorization: `Bearer ${tokenResponse.access}` },
   });
+
+  const events = Array.isArray(raw?.events)
+    ? raw.events.map(mapBackendEvent)
+    : [];
+
+  const counts = raw?.counts ?? {
+    total: events.length,
+    ongoing: 0,
+    completed: 0,
+    archived: 0,
+  };
+
+  return { events, counts } as EventDetails;
 }
 
 export async function fetchEventCollaborator(
@@ -46,9 +59,12 @@ export async function fetchEventCollaborator(
 
 export async function createEvent(data: {
   name: string;
-  date: string;
   location?: string;
+  type: string;
   notes?: string;
+  start_date: string;
+  end_date: string;
+  budget_amount?: string;
 }): Promise<{ id: string } | { shouldRedirect: boolean; message?: string }> {
   const tokenResponse = await getAccessToken();
   if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
@@ -93,18 +109,32 @@ export async function deleteEvent(id: string) {
 export async function updateEvent(
   id: string,
   data: {
-    name: string;
-    date: string;
+    name?: string;
     location?: string;
+    type?: string;
     notes?: string;
+    start_date?: string;
+    end_date?: string;
+    budget_amount?: number | string | null;
   }
 ) {
   const tokenResponse = await getAccessToken();
   if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
 
+  // Only include provided fields in the update body
+  //eslint-disable-next-line
+  const body: any = {};
+  if (data.name !== undefined) body.name = data.name;
+  if (data.location !== undefined) body.location = data.location;
+  if (data.type !== undefined) body.type = data.type;
+  if (data.notes !== undefined) body.notes = data.notes;
+  if (data.start_date !== undefined) body.start_date = data.start_date;
+  if (data.end_date !== undefined) body.end_date = data.end_date;
+  if (data.budget_amount !== undefined) body.budget_amount = data.budget_amount;
+
   return apiFetch(`${API_BASE}/api/events/${id}/`, {
     method: "PUT",
-    body: data,
+    body,
     headers: { Authorization: `Bearer ${tokenResponse.access}` },
   });
 }

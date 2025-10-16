@@ -64,12 +64,17 @@ export default function CreateEventDialog({
   });
 
  function onSubmit(values: FormValues) {
+   const toISO = (d: string) => new Date(d).toISOString();
+
    createEvent(
      {
        name: values.eventName,
-       date: values.startDate,
        location: values.venue,
+       type: values.eventType,
        notes: values.description,
+       start_date: toISO(values.startDate),
+       end_date: toISO(values.endDate),
+       budget_amount: values.budget || undefined,
        collaborators: values.collaborators!,
      },
      {

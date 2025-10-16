@@ -65,8 +65,16 @@ const EventSettingsForm = ({ eventId }: { eventId: string }) => {
         venue: event.location || "",
         eventType: "",
         description: event.notes || "",
-        startDate: event.date ? event.date.split("T")[0] : "",
-        endDate: event.date ? event.date.split("T")[0] : "",
+        startDate: event.start_date
+          ? new Date(event.start_date).toISOString().split("T")[0]
+          : event.date
+          ? new Date(event.date).toISOString().split("T")[0]
+          : "",
+        endDate: event.end_date
+          ? new Date(event.end_date).toISOString().split("T")[0]
+          : event.date
+          ? new Date(event.date).toISOString().split("T")[0]
+          : "",
         collaborators: [],
         image: null,
       });
@@ -79,12 +87,25 @@ const EventSettingsForm = ({ eventId }: { eventId: string }) => {
 
   async function onSubmit(values: FormValues) {
     try {
+      const startIso = values.startDate
+        ? new Date(`${values.startDate}T00:00:00Z`).toISOString()
+        : undefined;
+      const endIso = values.endDate
+        ? new Date(`${values.endDate}T00:00:00Z`).toISOString()
+        : undefined;
+      const budgetAmount = values.budget && values.budget.trim() !== ""
+        ? Number(values.budget)
+        : undefined;
+
       await updateEvent({
         id: event?.id || "",
         name: values.eventName,
-        date: values.startDate,
         location: values.venue,
+        type: values.eventType || undefined,
         notes: values.description,
+        start_date: startIso,
+        end_date: endIso,
+        budget_amount: budgetAmount,
       });
       toast.success("Event updated successfully");
     } catch (err) {

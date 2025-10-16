@@ -49,9 +49,12 @@ export function useCreateEvent() {
   return useMutation({
     mutationFn: async (data: {
       name: string;
-      date: string;
       location?: string;
+      type: string;
       notes?: string;
+      start_date: string;
+      end_date: string;
+      budget_amount?: string;
     }) => {
       const res = await createEvent(data);
 
@@ -76,17 +79,23 @@ export function useCreateEventWithInvites() {
   return useMutation({
     mutationFn: async (payload: {
       name: string;
-      date: string;
       location?: string;
+      type: string;
       notes?: string;
+      start_date: string;
+      end_date: string;
+      budget_amount?: string;
       collaborators: string[];
     }) => {
       // Step 1: create event
       const event = await createEvent({
         name: payload.name,
-        date: payload.date,
         location: payload.location,
+        type: payload.type,
         notes: payload.notes,
+        start_date: payload.start_date,
+        end_date: payload.end_date,
+        budget_amount: payload.budget_amount,
       });
 
       if (isAuthFailure(event) && event.shouldRedirect) {
@@ -153,10 +162,13 @@ export function useUpdateEvent() {
       ...payload
     }: {
       id: string;
-      name: string;
-      date: string;
+      name?: string;
       location?: string;
+      type?: string;
       notes?: string;
+      start_date?: string;
+      end_date?: string;
+      budget_amount?: number | string | null;
     }) => updateEvent(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });

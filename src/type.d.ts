@@ -26,6 +26,9 @@ export interface Event {
   id: string;
   name: string;
   date: string;
+  start_date?: string;
+  end_date?: string;
+  budget_amount?: number | null;
   location?: string;
   notes?: string;
   collaborators: Collaborator[];
