@@ -2,9 +2,7 @@ import BackButton from "@/components/custom-ui/BackButton";
 import CollaboratorsCard from "@/components/custom-ui/CollaboratorCard";
 import CollabStats from "@/components/custom-ui/CollabStats";
 import InviteCollabForm from "@/components/custom-ui/InviteCollabForm";
-import TaskDashboard from "@/components/custom-ui/TaskDashboard";
 import TaskDialog from "@/components/custom-ui/TaskFormDialog";
-import TaskStats from "@/components/custom-ui/TaskStats";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,9 +12,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { demoEvents } from "@/lib/data";
 import { fetchUserEvents } from "@/lib/server-actions";
-import { Mail, Plus, UserCheck, Users } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Suspense } from "react";
 
 export default async function CollaboratorsPage({

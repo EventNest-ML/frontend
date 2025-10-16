@@ -4,7 +4,7 @@ import { LogoIcon } from "@/components/custom-ui/Logo";
 import { NotificationDialog } from "@/components/custom-ui/NotificationDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bell, ImageOff } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";

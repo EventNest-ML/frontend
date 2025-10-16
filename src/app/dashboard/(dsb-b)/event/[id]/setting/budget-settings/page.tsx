@@ -18,15 +18,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+// Removed unused imports
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useUpdateEvent, useUserEvents } from "@/hooks/query";
 import { EventDetails } from "@/type";
 import { toast } from "sonner";
 
-const page = () => {
+const Page = () => {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { data: eventDetails } = useUserEvents();
@@ -50,7 +49,7 @@ const page = () => {
       await updateEvent({ id, budget_amount: amount });
       toast.success("Budget updated successfully");
       router.push(`/dashboard/event/${id}/home`);
-    } catch (err) {
+    } catch {
       toast.error("Failed to update budget");
     }
   }
@@ -195,4 +194,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

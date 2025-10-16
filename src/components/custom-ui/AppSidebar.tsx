@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { CustomDialog } from "./Dialog";
-import { Menu, X } from "lucide-react";
+import { X } from "lucide-react";
 
 export type SidebarLinkItem = {
   label: string;

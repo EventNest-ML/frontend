@@ -52,7 +52,7 @@ export async function POST(req: Request) {
 
     // Optionally invite collaborators
     let invited = 0;
-    let inviteErrors: Array<{ email: string; message: string; status?: number }> = [];
+    const inviteErrors: Array<{ email: string; message: string; status?: number }> = [];
     if (Array.isArray(body.collaborators) && body.collaborators.length > 0) {
       const invites = await Promise.allSettled(
         body.collaborators.map((email) =>

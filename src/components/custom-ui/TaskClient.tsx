@@ -13,7 +13,6 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Plus } from "lucide-react";
-import Loading from "@/app/loading";
 import { useCreateTask, useTasks } from "@/hooks/query";
 import { Task } from "@/type";
 import { Skeleton } from "../ui/skeleton";

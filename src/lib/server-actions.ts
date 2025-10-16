@@ -2,8 +2,31 @@
 import { API_BASE } from "@/lib/env";
 import { apiFetch } from "@/lib/http";
 import { getAccessToken } from "./auth-server";
-import type { EventDetails, Collaborator, Collab, Task, TaskFromBackend } from "@/type";
+import type { EventDetails, Collaborator, Collab, TaskFromBackend } from "@/type";
 import { mapBackendTask, uiToBackendStatus, mapBackendEvent } from "./utils";
+
+// Types for events API response to avoid `any`
+type BackendEventRaw = {
+  id: string;
+  name: string;
+  start_date?: string | null;
+  end_date?: string | null;
+  date?: string | null;
+  budget_amount?: number | string | null;
+  location?: string | null;
+  notes?: string | null;
+  collaborators?: Collaborator[] | null;
+};
+
+type FetchEventsResponse = {
+  events?: BackendEventRaw[];
+  counts?: {
+    total: number;
+    ongoing: number;
+    completed: number;
+    archived: number;
+  };
+};
 
 export async function handleAuthFailure(
   message?: string
@@ -23,7 +46,7 @@ export async function fetchUserEvents(): Promise<
     return handleAuthFailure(tokenResponse.error);
   }
 
-  const raw = await apiFetch<any>(`${API_BASE}/api/events/`, {
+  const raw = await apiFetch<FetchEventsResponse>(`${API_BASE}/api/events/`, {
     headers: { Authorization: `Bearer ${tokenResponse.access}` },
   });
 

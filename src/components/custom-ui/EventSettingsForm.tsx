@@ -108,7 +108,7 @@ const EventSettingsForm = ({ eventId }: { eventId: string }) => {
         budget_amount: budgetAmount,
       });
       toast.success("Event updated successfully");
-    } catch (err) {
+    } catch {
       toast.error("Failed to update event");
     }
   }

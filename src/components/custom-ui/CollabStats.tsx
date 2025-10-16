@@ -2,7 +2,7 @@ import React from "react";
 import { Card } from "../ui/card";
 import { Mail, UserCheck, Users } from "lucide-react";
 import { fetchEventCollaborator } from "@/lib/server-actions";
-import { Collab, Collaborator } from "@/type";
+import { Collab } from "@/type";
 
 const CollabStats = async ({ id }: { id: string }) => {
   const collaboratorDetails = (await fetchEventCollaborator(id)) as Collab;

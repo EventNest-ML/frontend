@@ -11,7 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { demoEvents as dummyEvents } from "@/lib/data";
 import { useUserEvents } from "@/hooks/query";
 import Loading from "@/app/loading";
 import { EventDetails } from "@/type";
