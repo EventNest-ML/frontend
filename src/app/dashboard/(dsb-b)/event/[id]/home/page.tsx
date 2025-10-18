@@ -19,6 +19,7 @@ import { fetchEventCollaborator, fetchUserEvents } from "@/lib/server-actions";
 import { Suspense } from "react";
 import Link from "next/link";
 import { EventDetails } from "@/type";
+import InviteCollabForm from "@/components/custom-ui/InviteCollabForm";
 
 export default async function EventDetailsPage({
   params,
@@ -53,8 +54,10 @@ export default async function EventDetailsPage({
         <div className="lg:col-span-2 space-y-6 flex flex-col">
           <BudgetCard event={event} />
           <TasksCard event={event} />
+          <InviteCollabForm eventId={id} /> 
           <Card className="flex-1">
             <div className="w-full flex justify-between items-center">
+              
               <CardHeader className="flex-1">
                 <CardTitle className="font-semibold">
                   Team Collaborators

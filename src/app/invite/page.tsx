@@ -9,15 +9,63 @@ import { Bell, ImageOff } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { Suspense } from "react";
+import { fetchEventById, acceptInvitation, declineInvitation } from "@/lib/server-actions";
+import type { Event } from "@/type";
+import { redirect } from "next/navigation";
 
-const page = () => {
+function formatDate(iso?: string | null) {
+  if (!iso) return "N/A";
+  try {
+    return new Date(iso).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  } catch {
+    return "N/A";
+  }
+}
+
+export default async function InvitePage({
+  searchParams,
+}: {
+  searchParams: { eventId?: string; id?: string; token?: string; email?: string };
+}) {
+  const eventId = searchParams?.eventId || searchParams?.id || "";
+  const token = searchParams?.token;
+
+  let event: Event | null = null;
+  if (eventId) {
+    const res = await fetchEventById(eventId);
+    if ("shouldRedirect" in res && res.shouldRedirect) {
+      redirect("/signin");
+    } else {
+      event = res as Event;
+    }
+  }
+
+  async function acceptAction(formData: FormData) {
+    "use server";
+    const id = String(formData.get("eventId") || "");
+    const tk = formData.get("token") ? String(formData.get("token")) : undefined;
+    if (!id) return redirect("/dashboard");
+    await acceptInvitation(id, tk);
+    redirect(`/dashboard/event/${id}/home`);
+  }
+
+  async function declineAction(formData: FormData) {
+    "use server";
+    const id = String(formData.get("eventId") || "");
+    const tk = formData.get("token") ? String(formData.get("token")) : undefined;
+    if (!id) return redirect("/dashboard");
+    await declineInvitation(id, tk);
+    redirect(`/dashboard`);
+  }
+
   return (
     <section className="w-full max-w-[1000px] mx-auto flex flex-col gap-10  p-7 md:px-20">
       <div className="w-full flex justify-between items-center">
-        <LogoIcon
-          width={36}
-          height={36}
-        />
+        <LogoIcon width={36} height={36} />
         <div className="flex gap-4">
           <NotificationDialog>
             <div className="size-[46px] bg-[#B457FA0D] hover:bg-[#b357fa1f] transition-all duration-300 ease-in-out flex justify-center items-center rounded-full cursor-pointer">
@@ -28,90 +76,67 @@ const page = () => {
             href={"/dashboard/settings/profile-settings"}
             className="size-[46px] bg-[#B457FA0D] hover:bg-[#b357fa1f] transition-all duration-300 ease-in-out flex justify-center items-center rounded-full"
           >
-            <Image
-              src={"/avatar.png"}
-              alt="avatar"
-              width={36}
-              height={36}
-              className="rounded-full"
-            />
+            <Image src={"/avatar.png"} alt="avatar" width={36} height={36} className="rounded-full" />
           </Link>
         </div>
       </div>
 
       <div className="relative h-[370px] w-full rounded-md overflow-hidden bg-gradient-to-br from-purple-900/60 via-purple-700/40 to-indigo-800/60 flex items-center justify-center">
-        <ImageOff
-          className="text-white/70"
-          size={60}
-        />
+        <ImageOff className="text-white/70" size={60} />
 
         <div className="bg-white p-8 space-y-4 max-w-[800px] rounded-xl absolute bottom-2 ">
-          <h1 className="font-bold">Bola&apos;s Wedding</h1>
+          <h1 className="font-bold">{event?.name ?? "Event"}</h1>
 
           <div className="grid grid-cols-5 gap-4">
             <div className="space-y-3 text-sm col-span-2">
               <p>
-                <span className="font-bold">Golden Hall: </span> 8 apple street,
-                Amuodofin
+                <span className="font-bold">Venue: </span> {event?.location || "Not set"}
               </p>
               <p>
-                <span className="font-bold">Golden Hall: </span> 8 apple street,
-                Amuodofin
+                <span className="font-bold">Collaborators: </span> {event?.collaborators?.length ?? 0}
               </p>
             </div>
             <div className="space-y-3 text-sm col-span-2">
               <p>
-                <span className="font-bold">Golden Hall: </span> 8 apple street,
-                Amuodofin
+                <span className="font-bold">Start Date: </span> {formatDate(event?.start_date ?? event?.date)}
               </p>
               <p>
-                <span className="font-bold">Golden Hall: </span> 8 apple street,
-                Amuodofin
+                <span className="font-bold">End Date: </span> {formatDate(event?.end_date ?? event?.date)}
               </p>
             </div>
-            <Badge className="border border-[#B457FA4D] bg-transparent w-fit h-fit text-black ml-auto">
-              Wedding
-            </Badge>
+            <Badge className="border border-[#B457FA4D] bg-transparent w-fit h-fit text-black ml-auto">Event</Badge>
           </div>
         </div>
       </div>
-      <BudgetCard showBudgetStats={false} />
+
+      <BudgetCard event={event ?? undefined} showBudgetStats={false} />
       <Card className="flex-1">
         <div className="w-full flex justify-between items-center">
           <CardHeader className="flex-1">
             <CardTitle className="font-semibold">Team Collaborators</CardTitle>
           </CardHeader>
         </div>
-        <Suspense
-          fallback={
-            <CardContent className="text-black">Loading...</CardContent>
-          }
-        >
-          <CollaboratorsCard id={"25f22dfd-87a4-4964-b041-0ab117cc0e37"} />
+        <Suspense fallback={<CardContent className="text-black">Loading...</CardContent>}>
+          {eventId ? <CollaboratorsCard id={eventId} /> : <CardContent>No event selected</CardContent>}
         </Suspense>
       </Card>
       <Card className="bg-transparent shadow-none">
         <CardHeader>
-          <CardTitle className="text-center">
-            You have been invited to collaborate on this event
-          </CardTitle>
+          <CardTitle className="text-center">You have been invited to collaborate on this event</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="w-fit mx-auto space-x-5">
-            <Button className="bg-[#B558FA] hover:bg-[#B558FA]/90">
+          <form className="w-fit mx-auto space-x-5">
+            <input type="hidden" name="eventId" value={eventId} />
+            {token ? <input type="hidden" name="token" value={token} /> : null}
+            <Button className="bg-[#B558FA] hover:bg-[#B558FA]/90" formAction={acceptAction}>
               Accept Invitation
             </Button>
-            <Button
-              variant={"outline"}
-              className="border-[#8A3BEF] bg-transparent"
-            >
+            <Button variant={"outline"} className="border-[#8A3BEF] bg-transparent" formAction={declineAction}>
               Decline Invitation
             </Button>
-          </div>
+          </form>
         </CardContent>
       </Card>
     </section>
   );
-};
-
-export default page;
+}
