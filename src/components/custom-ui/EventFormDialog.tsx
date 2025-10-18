@@ -131,7 +131,7 @@ export default function CreateEventDialog({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            className="grid grid-cols-1 gap-6"
           >
             {/* Left column */}
             <Card>
@@ -178,7 +178,7 @@ export default function CreateEventDialog({
                     control={form.control}
                     name="eventName"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="col-span-2 md:col-span-1">
                         <FormControl>
                           <Input
                             className="input-field rounded-full"
@@ -194,7 +194,7 @@ export default function CreateEventDialog({
                     control={form.control}
                     name="budget"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="col-span-2 md:col-span-1">
                         <FormControl>
                           <Input
                             className="input-field rounded-full"
@@ -212,7 +212,7 @@ export default function CreateEventDialog({
                     control={form.control}
                     name="venue"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="col-span-2 md:col-span-1">
                         <FormControl>
                           <Input
                             className="input-field rounded-full"
@@ -228,7 +228,7 @@ export default function CreateEventDialog({
                     control={form.control}
                     name="eventType"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="col-span-2 md:col-span-1">
                         <FormControl>
                           <Select
                             onValueChange={(val) => field.onChange(val)}
@@ -272,13 +272,18 @@ export default function CreateEventDialog({
                     control={form.control}
                     name="startDate"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="col-span-2 md:col-span-1">
                         <FormControl>
                           <div className="relative">
+                            {!field.value && (
+                              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">
+                                Start Date
+                              </span>
+                            )}
                             <Input
                               type="date"
                               placeholder="Start Date"
-                              className="pr-10 [appearance:none] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full input-field rounded-full"
+                              className={`pr-10 [appearance:none] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full input-field rounded-full ${!field.value ? '[&::-webkit-datetime-edit]:text-transparent [&::-webkit-datetime-edit-month-field]:text-transparent [&::-webkit-datetime-edit-day-field]:text-transparent [&::-webkit-datetime-edit-year-field]:text-transparent [&::-webkit-datetime-edit-text]:text-transparent' : ''}`}
                               {...field}
                             />
                             <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -293,13 +298,18 @@ export default function CreateEventDialog({
                     control={form.control}
                     name="endDate"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="col-span-2 md:col-span-1">
                         <FormControl>
                           <div className="relative">
+                            {!field.value && (
+                              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">
+                                End Date
+                              </span>
+                            )}
                             <Input
                               type="date"
                               placeholder="End Date"
-                              className="pr-10 [appearance:none] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full input-field rounded-full"
+                              className={`pr-10 [appearance:none] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full input-field rounded-full ${!field.value ? '[&::-webkit-datetime-edit]:text-transparent [&::-webkit-datetime-edit-month-field]:text-transparent [&::-webkit-datetime-edit-day-field]:text-transparent [&::-webkit-datetime-edit-year-field]:text-transparent [&::-webkit-datetime-edit-text]:text-transparent' : ''}`}
                               {...field}
                             />
                             <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -315,7 +325,7 @@ export default function CreateEventDialog({
 
             {/* Right column: Collaborators + actions */}
             <div className="flex flex-col gap-4">
-              <Card className="rounded-lg p-4 gap-0">
+              {/* <Card className="rounded-lg p-4 gap-0">
                 <h3 className="text-lg font-medium">Invite Collaborators</h3>
                 <p className="text-sm text-muted-foreground mb-3">
                   Add people to help plan this event
@@ -394,7 +404,7 @@ export default function CreateEventDialog({
                     </FormItem>
                   )}
                 />
-              </Card>
+              </Card> */}
 
               {/* Actions area */}
               <Card className="mt-auto rounded-lg p-4 flex-row gap-3">

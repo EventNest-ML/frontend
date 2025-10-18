@@ -80,6 +80,20 @@ export async function fetchEventCollaborator(
   );
 }
 
+// Fetch a single event by ID
+export async function fetchEventById(
+  id: string
+): Promise<ReturnType<typeof mapBackendEvent> | { shouldRedirect: boolean; message?: string }> {
+  const tokenResponse = await getAccessToken();
+  if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
+
+  const raw = await apiFetch<BackendEventRaw>(`${API_BASE}/api/events/${id}/`, {
+    headers: { Authorization: `Bearer ${tokenResponse.access}` },
+  });
+
+  return mapBackendEvent(raw);
+}
+
 export async function createEvent(data: {
   name: string;
   location?: string;
@@ -109,6 +123,36 @@ export async function inviteCollaborator(
   return apiFetch(`${API_BASE}/api/events/${eventId}/invite/`, {
     method: "POST",
     body: { email },
+    headers: { Authorization: `Bearer ${tokenResponse.access}` },
+  });
+}
+
+// Accept an invitation to collaborate on an event
+export async function acceptInvitation(
+  eventId: string,
+  token?: string
+): Promise<unknown | { shouldRedirect: boolean; message?: string }> {
+  const tokenResponse = await getAccessToken();
+  if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
+
+  return apiFetch(`${API_BASE}/api/events/${eventId}/contributors/accept/`, {
+    method: "POST",
+    body: token ? { token } : undefined,
+    headers: { Authorization: `Bearer ${tokenResponse.access}` },
+  });
+}
+
+// Decline an invitation to collaborate on an event
+export async function declineInvitation(
+  eventId: string,
+  token?: string
+): Promise<unknown | { shouldRedirect: boolean; message?: string }> {
+  const tokenResponse = await getAccessToken();
+  if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
+
+  return apiFetch(`${API_BASE}/api/events/${eventId}/contributors/decline/`, {
+    method: "POST",
+    body: token ? { token } : undefined,
     headers: { Authorization: `Bearer ${tokenResponse.access}` },
   });
 }

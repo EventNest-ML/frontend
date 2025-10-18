@@ -24,6 +24,7 @@ type InviteCollabFormProps = {
 
 export default function InviteCollabForm({ eventId }: InviteCollabFormProps) {
   const [email, setEmail] = useState("");
+  const [pendingEmails, setPendingEmails] = useState<string[]>([]);
   const queryClient = useQueryClient();
 
   // Get all collaborators
@@ -32,29 +33,44 @@ export default function InviteCollabForm({ eventId }: InviteCollabFormProps) {
     queryFn: () => fetchEventCollaborator(eventId),
   });
 
-  
   const collaborators =
     !isLoading && "collaborators" in collaboratorsDetails
       ? collaboratorsDetails.collaborators
       : [];
 
-  // Invite mutation
-  const { mutate: invite, isPending } = useMutation({
-    mutationFn: (email: string) => inviteCollaborator(eventId, email),
+  const addPending = () => {
+    const trimmed = email.trim();
+    if (!trimmed) return;
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
+    if (!isEmail) {
+      toast.error("Please enter a valid email");
+      return;
+    }
+    setPendingEmails((prev) => (prev.includes(trimmed) ? prev : [...prev, trimmed]));
+    setEmail("");
+  };
+
+  // Batch invite mutation
+  const { mutateAsync: inviteBatch, isPending } = useMutation({
+    mutationFn: async (emails: string[]) => {
+      await Promise.all(emails.map((e) => inviteCollaborator(eventId, e)));
+    },
     onSuccess: () => {
-      toast.success("Collaborator invited 🎉");
+      toast.success("Collaborator(s) invited 🎉");
       queryClient.invalidateQueries({ queryKey: ["collaborators", eventId] });
+      setPendingEmails([]);
       setEmail("");
     },
     onError: () => {
-      toast.error("Failed to invite collaborator");
+      toast.error("Failed to invite collaborator(s)");
     },
   });
 
-  const handleInvite = () => {
+  const handleInviteAll = async () => {
     const trimmed = email.trim();
-    if (!trimmed) return;
-    invite(trimmed);
+    const batch = pendingEmails.length ? pendingEmails : trimmed ? [trimmed] : [];
+    if (!batch.length) return;
+    await inviteBatch(batch);
   };
 
   return (
@@ -74,7 +90,7 @@ export default function InviteCollabForm({ eventId }: InviteCollabFormProps) {
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
-                handleInvite();
+                addPending();
               }
             }}
           />
@@ -82,7 +98,7 @@ export default function InviteCollabForm({ eventId }: InviteCollabFormProps) {
             type="button"
             disabled={isPending}
             className="bg-[#B558FA] hover:bg-[#B558FA]/70"
-            onClick={handleInvite}
+            onClick={handleInviteAll}
           >
             {isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -91,6 +107,23 @@ export default function InviteCollabForm({ eventId }: InviteCollabFormProps) {
             )}
           </Button>
         </div>
+
+        {pendingEmails.length > 0 && (
+          <>
+            <h4 className="text-sm font-medium mt-4">Pending Invites</h4>
+            <div className="flex gap-2 mt-3 items-center flex-wrap">
+              {pendingEmails.map((p, idx) => (
+                <div
+                  key={`pending-${idx}`}
+                  className="w-10 h-10 flex items-center justify-center rounded-full border-2 bg-[#B457FA4D] text-white border-dashed text-sm font-semibold"
+                  title={p}
+                >
+                  {p[0]?.toUpperCase()}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
         <h4 className="text-sm font-medium mt-4">Added Collaborators</h4>
         <div className="flex gap-2 mt-3 items-center flex-wrap">
@@ -113,6 +146,8 @@ export default function InviteCollabForm({ eventId }: InviteCollabFormProps) {
             size="icon"
             variant="outline"
             className="bg-gray-100/80 border-2 border-dashed rounded-full"
+            onClick={addPending}
+            disabled={!email.trim()}
           >
             <Plus className="w-4 h-4" />
           </Button>

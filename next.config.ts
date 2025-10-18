@@ -17,6 +17,13 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      // Support singular vs plural invite links from backend
+      { source: "/invites", destination: "/invite" },
+      { source: "/invites/:id", destination: "/invite?id=:id" },
+    ];
+  },
 };
 
 export default nextConfig;

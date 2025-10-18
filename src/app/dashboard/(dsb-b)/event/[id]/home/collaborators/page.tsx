@@ -56,7 +56,7 @@ export default async function CollaboratorsPage({
         <CardContent>
           <TaskDialog title="Create New Task">
             <Button className="bg-[#B558FA] hover:bg-[#B558FA]/80">
-              Invite <Plus />
+              Add Task <Plus />
             </Button>
           </TaskDialog>
         </CardContent>
@@ -83,7 +83,7 @@ export default async function CollaboratorsPage({
           <CollaboratorsCard id={id} />
         </Suspense>
       </Card>
-      <InviteCollabForm eventId={id} />
+      {/* <InviteCollabForm eventId={id} /> */}
     </div>
   );
 }
