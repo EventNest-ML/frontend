@@ -13,6 +13,7 @@ import { fetchEventById, acceptInvitation, declineInvitation, acceptInviteByToke
 import type { Event } from "@/type";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+import { isAuthFailure } from "@/lib/utils";
 
 export const metadata = { robots: { index: false, follow: false } };
 
@@ -40,8 +41,8 @@ export default async function InvitePage({
 
   let event: Event | null = null;
   if (eventId) {
-    const res: any = await fetchEventById(eventId);
-    if ("shouldRedirect" in res && res.shouldRedirect) {
+    const res = await fetchEventById(eventId);
+    if (isAuthFailure(res) && res.shouldRedirect) {
       redirect("/signin");
     } else {
       event = res as Event;
