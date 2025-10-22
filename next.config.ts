@@ -19,9 +19,29 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     return [
-      // Support singular vs plural invite links from backend
+      // Normalize plural invites to singular invite page
       { source: "/invites", destination: "/invite" },
       { source: "/invites/:id", destination: "/invite?id=:id" },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: "/invite",
+        headers: [
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+        ],
+      },
+      {
+        source: "/invites",
+        headers: [
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+        ],
+      },
     ];
   },
 };

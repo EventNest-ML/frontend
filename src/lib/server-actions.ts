@@ -1,97 +1,89 @@
 "use server";
-import { API_BASE } from "@/lib/env";
-import { apiFetch } from "@/lib/http";
-import { getAccessToken } from "./auth-server";
-import type { EventDetails, Collaborator, Collab, TaskFromBackend } from "@/type";
-import { mapBackendTask, uiToBackendStatus, mapBackendEvent } from "./utils";
 
-// Types for events API response to avoid `any`
-type BackendEventRaw = {
-  id: string;
-  name: string;
-  start_date?: string | null;
-  end_date?: string | null;
-  date?: string | null;
-  budget_amount?: number | string | null;
-  location?: string | null;
-  notes?: string | null;
-  collaborators?: Collaborator[] | null;
-};
+import { API_BASE, ACCESS_TOKEN_COOKIE } from "./env";
+import { apiFetch } from "./http";
+import { cookies } from "next/headers";
+import { getAccessToken as getAccessTokenServer } from "./auth-server";
+import type { EventDetails, Collab, TaskFromBackend } from "@/type";
+import { mapBackendEvent, mapBackendTask, uiToBackendStatus } from "./utils";
 
-type FetchEventsResponse = {
-  events?: BackendEventRaw[];
-  counts?: {
-    total: number;
-    ongoing: number;
-    completed: number;
-    archived: number;
-  };
-};
+async function getAccessToken() {
+  const jar = await cookies();
+  const token = jar.get(ACCESS_TOKEN_COOKIE)?.value;
+  return token;
+}
 
 export async function handleAuthFailure(
   message?: string
 ): Promise<{ shouldRedirect: boolean; message?: string }> {
-  const origin = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-  await fetch(`${origin}/api/auth/logout`, { method: "POST" });
-  console.warn(message ?? "Session invalid or expired.");
-
   return { shouldRedirect: true, message };
 }
 
-export async function fetchUserEvents(): Promise<
-  EventDetails | { shouldRedirect: boolean; message?: string }
-> {
-  const tokenResponse = await getAccessToken();
-  if ("error" in tokenResponse) {
-    return handleAuthFailure(tokenResponse.error);
-  }
-
-  const raw = await apiFetch<FetchEventsResponse>(`${API_BASE}/api/events/`, {
-    headers: { Authorization: `Bearer ${tokenResponse.access}` },
-  });
-
-  const events = Array.isArray(raw?.events)
-    ? raw.events.map(mapBackendEvent)
-    : [];
-
-  const counts = raw?.counts ?? {
-    total: events.length,
-    ongoing: 0,
-    completed: 0,
-    archived: 0,
-  };
-
-  return { events, counts } as EventDetails;
-}
-
-export async function fetchEventCollaborator(
-  eventId: string
-): Promise<Collab | { shouldRedirect: boolean; message?: string }> {
-  const tokenResponse = await getAccessToken();
-  if ("error" in tokenResponse) {
-    return handleAuthFailure(tokenResponse.error);
-  }
-
-  return apiFetch<Collab>(
-    `${API_BASE}/api/events/${eventId}/contributors/`,
-    {
-      headers: { Authorization: `Bearer ${tokenResponse.access}` },
-    }
-  );
-}
-
-// Fetch a single event by ID
-export async function fetchEventById(
-  id: string
-): Promise<ReturnType<typeof mapBackendEvent> | { shouldRedirect: boolean; message?: string }> {
-  const tokenResponse = await getAccessToken();
+// Existing exports updated to use getAccessTokenServer()
+export async function fetchUserEvents() {
+  const tokenResponse = await getAccessTokenServer();
   if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
-
-  const raw = await apiFetch<BackendEventRaw>(`${API_BASE}/api/events/${id}/`, {
+  return apiFetch(`${API_BASE}/api/events/`, {
     headers: { Authorization: `Bearer ${tokenResponse.access}` },
   });
+}
 
-  return mapBackendEvent(raw);
+export async function fetchEventById(eventId: string) {
+  const tokenResponse = await getAccessTokenServer();
+  if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
+  return apiFetch(`${API_BASE}/api/events/${eventId}/`, {
+    headers: { Authorization: `Bearer ${tokenResponse.access}` },
+  });
+}
+
+export async function acceptInvitation(eventId: string, inviteToken?: string) {
+  const tokenResponse = await getAccessTokenServer();
+  if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
+  return apiFetch(`${API_BASE}/api/events/${eventId}/contributors/accept/`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${tokenResponse.access}` },
+    body: inviteToken ? { token: inviteToken } : undefined,
+  });
+}
+
+export async function declineInvitation(eventId: string, inviteToken?: string) {
+  const tokenResponse = await getAccessTokenServer();
+  if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
+  return apiFetch(`${API_BASE}/api/events/${eventId}/contributors/decline/`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${tokenResponse.access}` },
+    body: inviteToken ? { token: inviteToken } : undefined,
+  });
+}
+
+// Token-only fallbacks when eventId is not provided in the link
+export async function acceptInviteByToken(inviteToken: string) {
+  const tokenResponse = await getAccessTokenServer();
+  if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
+  return apiFetch(`${API_BASE}/api/invites/accept/`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${tokenResponse.access}` },
+    body: { token: inviteToken },
+  });
+}
+
+export async function declineInviteByToken(inviteToken: string) {
+  const tokenResponse = await getAccessTokenServer();
+  if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
+  return apiFetch(`${API_BASE}/api/invites/decline/`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${tokenResponse.access}` },
+    body: { token: inviteToken },
+  });
+}
+
+// Restore missing exports used by hooks/query.ts
+export async function fetchEventCollaborator(eventId: string): Promise<Collab | { shouldRedirect: boolean; message?: string }> {
+  const tokenResponse = await getAccessTokenServer();
+  if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
+  return apiFetch<Collab>(`${API_BASE}/api/events/${eventId}/contributors/`, {
+    headers: { Authorization: `Bearer ${tokenResponse.access}` },
+  });
 }
 
 export async function createEvent(data: {
@@ -103,9 +95,8 @@ export async function createEvent(data: {
   end_date: string;
   budget_amount?: string;
 }): Promise<{ id: string } | { shouldRedirect: boolean; message?: string }> {
-  const tokenResponse = await getAccessToken();
+  const tokenResponse = await getAccessTokenServer();
   if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
-
   return apiFetch<{ id: string }>(`${API_BASE}/api/events/`, {
     method: "POST",
     body: data,
@@ -113,13 +104,9 @@ export async function createEvent(data: {
   });
 }
 
-export async function inviteCollaborator(
-  eventId: string,
-  email: string
-): Promise<unknown | { shouldRedirect: boolean; message?: string }> {
-  const tokenResponse = await getAccessToken();
+export async function inviteCollaborator(eventId: string, email: string) {
+  const tokenResponse = await getAccessTokenServer();
   if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
-
   return apiFetch(`${API_BASE}/api/events/${eventId}/invite/`, {
     method: "POST",
     body: { email },
@@ -127,51 +114,14 @@ export async function inviteCollaborator(
   });
 }
 
-// Accept an invitation to collaborate on an event
-export async function acceptInvitation(
-  eventId: string,
-  token?: string
-): Promise<unknown | { shouldRedirect: boolean; message?: string }> {
-  const tokenResponse = await getAccessToken();
-  if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
-
-  return apiFetch(`${API_BASE}/api/events/${eventId}/contributors/accept/`, {
-    method: "POST",
-    body: token ? { token } : undefined,
-    headers: { Authorization: `Bearer ${tokenResponse.access}` },
-  });
-}
-
-// Decline an invitation to collaborate on an event
-export async function declineInvitation(
-  eventId: string,
-  token?: string
-): Promise<unknown | { shouldRedirect: boolean; message?: string }> {
-  const tokenResponse = await getAccessToken();
-  if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
-
-  return apiFetch(`${API_BASE}/api/events/${eventId}/contributors/decline/`, {
-    method: "POST",
-    body: token ? { token } : undefined,
-    headers: { Authorization: `Bearer ${tokenResponse.access}` },
-  });
-}
-
 export async function deleteEvent(id: string) {
-  const tokenResponse = await getAccessToken();
-
-  if ("error" in tokenResponse) {
-    return handleAuthFailure(tokenResponse.error);
-  }
-
+  const tokenResponse = await getAccessTokenServer();
+  if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
   return apiFetch<{ success: boolean }>(`${API_BASE}/api/events/${id}/`, {
     method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${tokenResponse.access}`,
-    },
+    headers: { Authorization: `Bearer ${tokenResponse.access}` },
   });
 }
-
 
 export async function updateEvent(
   id: string,
@@ -185,10 +135,8 @@ export async function updateEvent(
     budget_amount?: number | string | null;
   }
 ) {
-  const tokenResponse = await getAccessToken();
+  const tokenResponse = await getAccessTokenServer();
   if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
-
-  // Only include provided fields in the update body
   //eslint-disable-next-line
   const body: any = {};
   if (data.name !== undefined) body.name = data.name;
@@ -198,7 +146,6 @@ export async function updateEvent(
   if (data.start_date !== undefined) body.start_date = data.start_date;
   if (data.end_date !== undefined) body.end_date = data.end_date;
   if (data.budget_amount !== undefined) body.budget_amount = data.budget_amount;
-
   return apiFetch(`${API_BASE}/api/events/${id}/`, {
     method: "PUT",
     body,
@@ -207,17 +154,12 @@ export async function updateEvent(
 }
 
 export async function fetchTasks(eventId: string) {
-  const tokenResp = await getAccessToken();
-  if ("error" in tokenResp) return handleAuthFailure(tokenResp.error);
-
-  const data = await apiFetch<TaskFromBackend[]>(
-    `${API_BASE}/api/events/${eventId}/tasks/`,
-    {
-      method: "GET",
-      headers: { Authorization: `Bearer ${tokenResp.access}` },
-    }
-  );
-
+  const tokenResponse = await getAccessTokenServer();
+  if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
+  const data = await apiFetch<TaskFromBackend[]>(`${API_BASE}/api/events/${eventId}/tasks/`, {
+    method: "GET",
+    headers: { Authorization: `Bearer ${tokenResponse.access}` },
+  });
   return data.map(mapBackendTask);
 }
 
@@ -231,9 +173,8 @@ export async function createTask(
     status?: "pending" | "in-progress" | "completed";
   }
 ) {
-  const tokenResp = await getAccessToken();
-  if ("error" in tokenResp) return handleAuthFailure(tokenResp.error);
-
+  const tokenResponse = await getAccessTokenServer();
+  if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
   const body = {
     title: payload.taskName,
     description: payload.description,
@@ -241,58 +182,42 @@ export async function createTask(
     due_date: payload.dueDate ?? null,
     status: payload.status ? uiToBackendStatus(payload.status) : undefined,
   };
-
-  const created = await apiFetch<TaskFromBackend>(
-    `${API_BASE}/api/events/${eventId}/tasks/`,
-    {
-      method: "POST",
-      body,
-      headers: { Authorization: `Bearer ${tokenResp.access}` },
-    }
-  );
-
+  const created = await apiFetch<TaskFromBackend>(`${API_BASE}/api/events/${eventId}/tasks/`, {
+    method: "POST",
+    body,
+    headers: { Authorization: `Bearer ${tokenResponse.access}` },
+  });
   return mapBackendTask(created);
 }
 
 export async function updateTask(
   taskId: number | string,
-  payload: {
-    title?: string;
-    description?: string;
-    assignee?: number | null;
-    dueDate?: string | null;
-    status?: "pending" | "in-progress" | "completed";
-  }
+  //eslint-disable-next-line
+  payload: any
 ) {
-  const tokenResp = await getAccessToken();
-  if ("error" in tokenResp) return handleAuthFailure(tokenResp.error);
-
+  const tokenResponse = await getAccessTokenServer();
+  if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
   //eslint-disable-next-line
   const body: any = {};
   if (payload.title !== undefined) body.title = payload.title;
   if (payload.description !== undefined) body.description = payload.description;
   if (payload.assignee !== undefined) body.assignee = payload.assignee;
   if (payload.dueDate !== undefined) body.due_date = payload.dueDate;
-  if (payload.status !== undefined)
-    body.status = uiToBackendStatus(payload.status);
-
+  if (payload.status !== undefined) body.status = uiToBackendStatus(payload.status);
   const updated = await apiFetch<TaskFromBackend>(`${API_BASE}/api/tasks/${taskId}/`, {
     method: "PATCH",
     body,
-    headers: { Authorization: `Bearer ${tokenResp.access}` },
+    headers: { Authorization: `Bearer ${tokenResponse.access}` },
   });
-
   return mapBackendTask(updated);
 }
 
 export async function deleteTask(taskId: number | string) {
-  const tokenResp = await getAccessToken();
-  if ("error" in tokenResp) return handleAuthFailure(tokenResp.error);
-
+  const tokenResponse = await getAccessTokenServer();
+  if ("error" in tokenResponse) return handleAuthFailure(tokenResponse.error);
   await apiFetch(`${API_BASE}/api/tasks/${taskId}/`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${tokenResp.access}` },
+    headers: { Authorization: `Bearer ${tokenResponse.access}` },
   });
-
   return { ok: true };
 }

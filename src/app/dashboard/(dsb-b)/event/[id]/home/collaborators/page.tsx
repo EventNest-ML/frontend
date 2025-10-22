@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { fetchUserEvents } from "@/lib/server-actions";
 import { Plus } from "lucide-react";
 import { Suspense } from "react";
+import { isAuthFailure } from "@/lib/utils";
 
 export default async function CollaboratorsPage({
   params,
@@ -26,7 +27,11 @@ export default async function CollaboratorsPage({
     fetchUserEvents(),
   ]);
 
-  const events = "events" in eventDetails ? eventDetails.events : [];
+  type EventsResponse = { events?: { id: string }[] };
+  const events: { id: string }[] =
+    !isAuthFailure(eventDetails) && Array.isArray((eventDetails as EventsResponse).events)
+      ? ((eventDetails as EventsResponse).events as { id: string }[])
+      : [];
   const event = events.find((e) => e.id === id);
 
   if (!event) {

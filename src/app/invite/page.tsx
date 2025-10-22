@@ -9,9 +9,12 @@ import { Bell, ImageOff } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { Suspense } from "react";
-import { fetchEventById, acceptInvitation, declineInvitation } from "@/lib/server-actions";
+import { fetchEventById, acceptInvitation, declineInvitation, acceptInviteByToken, declineInviteByToken } from "@/lib/server-actions";
 import type { Event } from "@/type";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+
+export const metadata = { robots: { index: false, follow: false } };
 
 function formatDate(iso?: string | null) {
   if (!iso) return "N/A";
@@ -32,11 +35,12 @@ export default async function InvitePage({
   searchParams: { eventId?: string; id?: string; token?: string; email?: string };
 }) {
   const eventId = searchParams?.eventId || searchParams?.id || "";
-  const token = searchParams?.token;
+  const cookieToken = (await cookies()).get("invite_token")?.value;
+  const token = searchParams?.token || cookieToken;
 
   let event: Event | null = null;
   if (eventId) {
-    const res = await fetchEventById(eventId);
+    const res: any = await fetchEventById(eventId);
     if ("shouldRedirect" in res && res.shouldRedirect) {
       redirect("/signin");
     } else {
@@ -48,18 +52,30 @@ export default async function InvitePage({
     "use server";
     const id = String(formData.get("eventId") || "");
     const tk = formData.get("token") ? String(formData.get("token")) : undefined;
-    if (!id) return redirect("/dashboard");
-    await acceptInvitation(id, tk);
-    redirect(`/dashboard/event/${id}/home`);
+    if (id) {
+      await acceptInvitation(id, tk);
+      return redirect(`/dashboard/event/${id}/home`);
+    }
+    if (tk) {
+      await acceptInviteByToken(tk);
+      return redirect(`/dashboard/home`);
+    }
+    return redirect("/dashboard");
   }
 
   async function declineAction(formData: FormData) {
     "use server";
     const id = String(formData.get("eventId") || "");
     const tk = formData.get("token") ? String(formData.get("token")) : undefined;
-    if (!id) return redirect("/dashboard");
-    await declineInvitation(id, tk);
-    redirect(`/dashboard`);
+    if (id) {
+      await declineInvitation(id, tk);
+      return redirect(`/dashboard`);
+    }
+    if (tk) {
+      await declineInviteByToken(tk);
+      return redirect(`/dashboard`);
+    }
+    return redirect(`/dashboard`);
   }
 
   return (
