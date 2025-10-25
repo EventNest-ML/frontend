@@ -20,6 +20,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { EventDetails } from "@/type";
 import InviteCollabForm from "@/components/custom-ui/InviteCollabForm";
+import { isAuthFailure } from "@/lib/utils";
 
 export default async function EventDetailsPage({
   params,
@@ -31,7 +32,7 @@ export default async function EventDetailsPage({
     fetchUserEvents(),
   ]);
 
-  if ("shouldRedirect" in eventDetails && eventDetails.shouldRedirect) {
+  if (isAuthFailure(eventDetails) && eventDetails.shouldRedirect) {
     if (typeof window !== "undefined") {
       window.location.href = "/signup";
     }

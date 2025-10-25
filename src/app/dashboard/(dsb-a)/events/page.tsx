@@ -16,6 +16,7 @@ import Loading from "@/app/loading";
 import { EventDetails } from "@/type";
 import { useQuery } from "@tanstack/react-query";
 import { getSession } from "@/lib/auth-server";
+import { isAuthFailure } from "@/lib/utils";
 
 const EventDashboard = () => {
     const { data: session } = useQuery({
@@ -29,7 +30,7 @@ const EventDashboard = () => {
     return <Loading />;
   }
 
-  if ("shouldRedirect" in eventDetails && eventDetails.shouldRedirect) {
+  if (isAuthFailure(eventDetails) && eventDetails.shouldRedirect) {
     if (typeof window !== "undefined") {
       window.location.href = "/signup";
     }
